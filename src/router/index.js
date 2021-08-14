@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
+import Home from '../views/Home/Home.vue'
 
 Vue.use(VueRouter)
 
@@ -21,10 +21,16 @@ const routes = [
     component: () => import('../views/Logup.vue')
   },
   {
+    path: '/logged-out',
+    name: 'LonggedOut',
+    component: () => import('../views/LoggedOut.vue')
+  },
+  {
     path: '*',
     name: 'ErrorPage',
     component: () => import('../views/ErrorPage.vue')
-  }
+  },
+
 ]
 
 const router = new VueRouter({

@@ -1,0 +1,121 @@
+<template>
+  <div class="d-flex align-center justify-center">
+    <v-card class="card" elevation="5">
+      <div class="align-center">
+        <h4 style="color: #253858" class="font-weight-regular py-1 card-title">
+          Sign up for your account
+        </h4>
+        <h3 style="color: #253858">Trà Lô</h3>
+      </div>
+      <div class="card-account py-3">
+        <v-text-field
+          v-model="account"
+          dense
+          outlined
+          placeholder="Enter email"
+          append-icon="mdi-account"
+          :rules="[rules.require, rules.email]"
+        ></v-text-field>
+        <v-text-field
+          v-model="password.text"
+          :type="password.type"
+          dense
+          outlined
+          placeholder="Enter password"
+          :append-icon="checkPassword"
+          :rules="[rules.require]"
+          @click:append="showPassword"
+        ></v-text-field>
+        <v-btn
+          color="success"
+          style="width: 100%"
+          class="font-weight-bold card-account_btn py-3 mt-2"
+          >Đăng Nhập</v-btn
+        >
+      </div>
+
+      <hr />
+      <div class="take-password d-flex justify-space-around align-center">
+        <span @click="$router.push({ name: 'Login' })" class="register">
+          Already have an Atlassian account? Log in</span
+        >
+      </div>
+    </v-card>
+  </div>
+</template>
+
+<script>
+export default {
+  computed: {
+    checkPassword() {
+      return this.password.text ? this.password.icon : "mdi-lock";
+    },
+  },
+  data() {
+    return {
+      associates: [
+        {
+          name: "Facebook",
+          icon: "mdi-facebook",
+          color: "blue",
+        },
+        {
+          name: "Gmail",
+          icon: "mdi-gmail",
+          color: "red darken-4",
+        },
+        {
+          name: "Github",
+          icon: "mdi-github",
+          color: "black",
+        },
+      ],
+      account: "",
+      password: {
+        text: "",
+        type: "password",
+        icon: "mdi-eye",
+      },
+      rules: {
+        require: (val) => !!val || "Require !",
+        email: (value) => {
+          const pattern =
+            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+          return pattern.test(value) || "Invalid e-mail.";
+        },
+      },
+    };
+  },
+  methods: {
+    showPassword() {
+      if (this.password.text) {
+        this.password.type =
+          this.password.type == "password" ? "text" : "password";
+        this.password.icon =
+          this.password.type == "password" ? "mdi-eye" : "mdi-eye-off";
+      }
+    },
+  },
+};
+</script>
+
+<style lang="scss">
+.card {
+  width: 400px;
+  padding: 32px 40px;
+  background-color: white;
+  color: rgb(94, 108, 132);
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 10px;
+}
+.take-password {
+  color: #0052cc;
+  opacity: 0.7;
+  font-size: 1rem;
+  padding: 15px 0;
+
+  .forgot-pass,
+  .register {
+    cursor: pointer;
+  }
+}
+</style>

@@ -1,5 +1,8 @@
 <template>
-  <div>This is Footer</div>
+  <div>
+    <h3>Clone Trello Page</h3>
+    <h3>Clone by Sirius Black</h3>
+  </div>
 </template>
 
 <script>

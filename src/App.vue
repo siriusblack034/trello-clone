@@ -1,7 +1,7 @@
 <template>
   <v-app>
-    <div class="px-0 py-10">
-      <div v-if="isLogin">
+    <div class="px-0 py-5">
+      <div v-if="isAuth">
         <Header></Header>
       </div>
       <div v-else>
@@ -11,14 +11,14 @@
     <div>
       <router-view />
     </div>
-    <footer>
+    <footer class="py-5 pb-0">
       <Footer></Footer>
     </footer>
   </v-app>
 </template>
 <script>
 import Header from "./layout/Header.vue";
-import HeaderAuth from "./layout/HeaderAuth.vue";
+import HeaderAuth from "./layout/HeaderLogin.vue";
 import Footer from "./layout/Footer.vue";
 
 export default {
@@ -29,7 +29,7 @@ export default {
   },
   data() {
     return {
-      isLogin: false,
+      isAuth: false,
     };
   },
 };
