@@ -1,12 +1,13 @@
 <template>
   <v-app>
-    <div class="px-0 py-5">
-      <div v-if="isAuth">
+    <div>
+      <!-- <div v-if="isAuth">
         <Header></Header>
       </div>
       <div v-else>
         <HeaderAuth />
-      </div>
+      </div> -->
+      <HeaderHome :scroll="scroll" />
     </div>
     <div>
       <router-view />
@@ -17,20 +18,37 @@
   </v-app>
 </template>
 <script>
-import Header from "./layout/Header.vue";
-import HeaderAuth from "./layout/HeaderLogin.vue";
+/* import Header from "./layout/Header.vue";
+import HeaderAuth from "./layout/HeaderLogin.vue"; */
+import HeaderHome from "./layout/HeaderHome.vue";
 import Footer from "./layout/Footer.vue";
-
 export default {
   components: {
-    Header,
-    HeaderAuth,
+    /*     Header,
+    HeaderAuth, */
     Footer,
+    HeaderHome,
+  },
+  created() {
+    window.addEventListener("scroll", this.handleScroll);
   },
   data() {
     return {
       isAuth: false,
+      scroll: false,
     };
+  },
+  methods: {
+    handleScroll() {
+      if (window.scrollY == 0) {
+        this.scroll = false;
+      } else {
+        this.scroll = true;
+      }
+    },
+  },
+  destroyed() {
+    window.removeEventListener("scroll", this.handleScroll);
   },
 };
 </script>
