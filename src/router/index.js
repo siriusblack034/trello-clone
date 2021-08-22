@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '../views/Home/Home.vue'
+import Home from '../views/Home.vue'
 
 Vue.use(VueRouter)
 
@@ -29,6 +29,11 @@ const routes = [
     path: '/logged-out',
     name: 'LonggedOut',
     component: () => import('../views/LoggedOut.vue')
+  },
+  {
+    path: '/board',
+    name: 'Board',
+    component: () => import('../views/Boards.vue')
   },
   {
     path: '*',

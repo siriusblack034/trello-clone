@@ -6,28 +6,28 @@
       </div>
       <div v-else>
         <HeaderAuth />
-      </div> -->
-      <HeaderHome :scroll="scroll" />
+      </div>
+      <HeaderHome :scroll="scroll" /> -->
     </div>
     <div>
       <router-view />
     </div>
-    <footer class="py-5 pb-0">
+    <!-- <footer class="py-5 pb-0">
       <Footer></Footer>
-    </footer>
+    </footer> -->
   </v-app>
 </template>
 <script>
 /* import Header from "./layout/Header.vue";
-import HeaderAuth from "./layout/HeaderLogin.vue"; */
+import HeaderAuth from "./layout/HeaderLogin.vue";
 import HeaderHome from "./layout/HeaderHome.vue";
-import Footer from "./layout/Footer.vue";
+import Footer from "./layout/Footer.vue"; */
 export default {
   components: {
     /*     Header,
-    HeaderAuth, */
+    HeaderAuth,
     Footer,
-    HeaderHome,
+    HeaderHome, */
   },
   created() {
     window.addEventListener("scroll", this.handleScroll);

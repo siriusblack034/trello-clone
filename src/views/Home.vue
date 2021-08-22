@@ -565,8 +565,8 @@
 
 <script>
 import { mapState } from "vuex";
-import { features } from "../../contants/features";
-import Card from "../../components/Card.vue";
+import { features } from "../contants/features";
+import Card from "../components/Card.vue";
 export default {
   name: "Home",
   components: {
