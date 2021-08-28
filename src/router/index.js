@@ -1,6 +1,14 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
+import Login from '../views/Login.vue'
+import Logup from '../views/Logup.vue'
+import Board from '../views/Board.vue'
+import LoggedOut from '../views/LoggedOut.vue'
+import ForgotPassword from '../views/ForgotPassword'
+import HomeBoards from '../views/HomeBoards'
+import ErrorPage from '../views/ErrorPage'
+import { store } from '../store'
 
 Vue.use(VueRouter)
 
@@ -8,37 +16,68 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home
+    component: Home,
+    meta: {
+      requiresAuth: false,
+    }
+
   },
   {
     path: '/login',
     name: 'Login',
+    component: Login,
+    meta: {
+      requiresAuth: false
+    }
 
-    component: () => import(/* webpackChunkName: "about" */ '../views/Login.vue')
   }, {
     path: '/logup',
     name: 'Logup',
-    component: () => import('../views/Logup.vue')
+    component: Logup,
+    meta: {
+      requiresAuth: false,
+    }
+
   },
   {
     path: '/forgot-password',
     name: 'Forgot Password',
-    component: () => import('../views/ForgotPassword.vue')
+    component: ForgotPassword,
+    meta: {
+      requiresAuth: true
+    }
   },
   {
     path: '/logged-out',
     name: 'LonggedOut',
-    component: () => import('../views/LoggedOut.vue')
+    component: LoggedOut
+
+
   },
   {
     path: '/board',
     name: 'Board',
-    component: () => import('../views/Boards.vue')
+    component: Board,
+    meta: {
+      requiresAuth: true
+    }
+
+  },
+  {
+    path: '/home-boards',
+    name: 'HomeBoards',
+    component: HomeBoards,
+    meta: {
+      requiresAuth: true
+    }
   },
   {
     path: '*',
     name: 'ErrorPage',
-    component: () => import('../views/ErrorPage.vue')
+    component: ErrorPage,
+    meta: {
+      guest: true,
+    }
   },
 
 ]
@@ -48,5 +87,24 @@ const router = new VueRouter({
   base: process.env.BASE_URL,
   routes
 })
-
+router.beforeEach((to, from, next) => {
+  console.log(store.state.user.isLogin);
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (store.state.user.isLogin) {
+      next()
+      return
+    }
+    next('/login')
+  }
+  else if (to.matched.some(record => record.meta.guest)) {
+    next()
+  }
+  else {
+    if (!store.state.user.isLogin) {
+      next()
+      return
+    }
+    next('/home-boards')
+  }
+})
 export default router

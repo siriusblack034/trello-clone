@@ -1,44 +1,57 @@
 <template>
   <v-app>
     <div>
-      <!-- <div v-if="isAuth">
-        <Header></Header>
+      <div v-if="user.isLogin">
+        <HeaderBoard />
       </div>
-      <div v-else>
+      <div
+        v-else-if="this.$route.name == 'Login' || this.$route.name == 'Logup'"
+        class="py-6"
+      >
         <HeaderAuth />
       </div>
-      <HeaderHome :scroll="scroll" /> -->
+      <div v-else>
+        <HeaderHome :scroll="scroll" />
+      </div>
     </div>
     <div>
       <router-view />
     </div>
-    <!-- <footer class="py-5 pb-0">
+    <footer class="py-5 pb-0">
       <Footer></Footer>
-    </footer> -->
+    </footer>
   </v-app>
 </template>
 <script>
-/* import Header from "./layout/Header.vue";
-import HeaderAuth from "./layout/HeaderLogin.vue";
+import HeaderBoard from "./layout/HeaderBoard.vue";
+import HeaderAuth from "./layout/HeaderAuth.vue";
 import HeaderHome from "./layout/HeaderHome.vue";
-import Footer from "./layout/Footer.vue"; */
+import Footer from "./layout/Footer.vue";
+import { mapActions, mapState } from "vuex";
 export default {
   components: {
-    /*     Header,
+    HeaderBoard,
     HeaderAuth,
     Footer,
-    HeaderHome, */
+    HeaderHome,
   },
-  created() {
+  
+   created() {
     window.addEventListener("scroll", this.handleScroll);
+     this.$store.dispatch('getCookie')
+
   },
+  computed: {
+    ...mapState(["user"]),
+  },
+
   data() {
     return {
-      isAuth: false,
       scroll: false,
     };
   },
   methods: {
+    ...mapActions(["getCookie"]),
     handleScroll() {
       if (window.scrollY == 0) {
         this.scroll = false;

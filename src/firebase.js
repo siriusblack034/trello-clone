@@ -1,5 +1,4 @@
 import firebase from 'firebase'
-import 'firebase/firestore'
 const firebaseConfig = {
   apiKey: "AIzaSyBkHDxVf-woq3WFM3yGn7EDt1F1jl3oDns",
   authDomain: "trello-clone-1d8e7.firebaseapp.com",
@@ -11,4 +10,5 @@ const firebaseConfig = {
   measurementId: "G-5G6JW10MQD"
 };
 const firebaseApp = firebase.initializeApp(firebaseConfig)
-export default firebaseApp.firestore()
+
+export default firebaseApp

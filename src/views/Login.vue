@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex align-center justify-center">
-    <v-card class="card" elevation="5">
+    <v-card class="card" elevation="5" @keydown.enter="getAuth()">
       <div class="align-center">
         <h4 class="font-weight-regular py-1 card-title">
           Log in to continue to:
@@ -26,11 +26,13 @@
           :rules="[rules.require]"
           @click:append="showPassword"
         ></v-text-field>
+        <span class="red--text">{{ messError }}</span>
         <v-btn
           color="success"
           style="width: 100%"
           class="font-weight-bold card-account_btn py-3 mt-2"
-          >Đăng Ký</v-btn
+          @click="getAuth()"
+          >Đăng Nhập</v-btn
         >
       </div>
       <h4 class="font-weight-thin">HOẶC</h4>
@@ -41,6 +43,7 @@
           color="white"
           class="d-flex justify-center align-center pl-3 py-2 my-3"
           elevation="7"
+          @click="loginWithAssociate(associate.name)"
           style="width: 100%; height: 42px"
         >
           <v-icon :color="associate.color">{{ associate.icon }}</v-icon>
@@ -67,6 +70,7 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
 export default {
   computed: {
     checkPassword() {
@@ -92,6 +96,7 @@ export default {
           color: "black",
         },
       ],
+      messError: "",
       account: "",
       password: {
         text: "",
@@ -109,12 +114,43 @@ export default {
     };
   },
   methods: {
+    ...mapActions(["login", "loginWithGmail"]),
     showPassword() {
       if (this.password.text) {
         this.password.type =
           this.password.type == "password" ? "text" : "password";
         this.password.icon =
           this.password.type == "password" ? "mdi-eye" : "mdi-eye-off";
+      }
+    },
+    getAuth() {
+      if (this.account && this.password.text) {
+        this.login({
+          email: this.account,
+          password: this.password.text,
+        })
+          .then((result) => {
+            if (result.success) {
+              this.$router.push({ name: "HomeBoards" });
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+            this.messError = "Sai mật khẩu | tài khoản !";
+          });
+      }
+    },
+    loginWithAssociate(name) {
+      if (name == "Gmail") {
+        this.loginWithGmail()
+          .then((result) => {
+            if (result.success) {
+              this.$router.push({ name: "HomeBoards" });
+            }
+          })
+          .catch(() => {
+            this.messError = "Lỗi đăng nhập !";
+          });
       }
     },
   },
@@ -129,7 +165,6 @@ export default {
   background-color: white;
   color: rgb(94, 108, 132);
   box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 10px;
-  
 }
 .take-password {
   color: #0052cc;
