@@ -8,13 +8,14 @@ const boardSchema = new Schema({
   background: {
     type: Object
   },
-  decks: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Deck'
-  }],
+
   star: {
     type: Boolean,
     default: false
+  },
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
   }
 })
 const Board = mongoose.model('Board', boardSchema)

@@ -5,13 +5,16 @@ const secureApi = require('helmet')
 const boardRoute = require('./routes/board')
 const deckRoute = require('./routes/deck')
 const taskRoute = require('./routes/task')
+const authRoute = require('./routes/auth')
 const cors = require('cors')
+const { MONGODB_URL } = require('./configs')
 //config env
 require('dotenv').config()
+
 const app = express()
 // Connect DB
 const mongooseClient = require('mongoose')
-mongooseClient.connect('mongodb://localhost/trello-clone').then(() => {
+mongooseClient.connect(MONGODB_URL).then(() => {
   console.log('Connected Success !');
 })
   .catch((error) => {
@@ -26,6 +29,7 @@ app.use(cors())
 app.use('/boards', boardRoute)
 app.use('/decks', deckRoute)
 app.use('/tasks', taskRoute)
+app.use('/auth', authRoute)
 
 app.get('/', (req, res, next) => {
   return res.status(200).json({
