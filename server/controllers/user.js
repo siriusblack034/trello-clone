@@ -1,8 +1,10 @@
-const User = require('../routes/auth')
+const User = require('../models/User')
 
 const deleteUser = async (req, res, next) => {
   try {
-
+    const { userId } = req.params
+    await User.findByIdAndRemove(userId)
+    return res.status(200).json({ success: true })
   } catch (error) {
     next(error)
   }
@@ -10,6 +12,9 @@ const deleteUser = async (req, res, next) => {
 
 const getUser = async (req, res, next) => {
   try {
+    const { userId } = req.params
+    const user = await User.findById(userId)
+    return res.status(200).json({ user })
 
   } catch (error) {
     next(error)
@@ -18,8 +23,16 @@ const getUser = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
   try {
+    const { userId } = req.params
+    await User.findByIdAndUpdate(userId, req.body)
+    return res.status(200).json({ success: true })
 
   } catch (error) {
     next(error)
   }
+}
+module.exports = {
+  deleteUser,
+  getUser,
+  updateUser
 }

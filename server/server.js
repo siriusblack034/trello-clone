@@ -6,6 +6,7 @@ const boardRoute = require('./routes/board')
 const deckRoute = require('./routes/deck')
 const taskRoute = require('./routes/task')
 const authRoute = require('./routes/auth')
+const userRoute = require('./routes/user')
 const cors = require('cors')
 const { MONGODB_URL } = require('./configs')
 //config env
@@ -30,15 +31,12 @@ app.use('/boards', boardRoute)
 app.use('/decks', deckRoute)
 app.use('/tasks', taskRoute)
 app.use('/auth', authRoute)
-
+app.use('/user', userRoute)
 app.get('/', (req, res, next) => {
   return res.status(200).json({
     message: "Server is OK !"
   })
 })
-
-
-
 
 // Catch Errors
 app.use((req, res, next) => {
