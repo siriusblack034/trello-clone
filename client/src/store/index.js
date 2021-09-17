@@ -1,26 +1,26 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import services from '../services'
+import auth from '../services/modules/auth'
+import boardService from '../services/modules/board'
 import createPersistedState from 'vuex-persistedstate'
+import service from '../services'
 Vue.use(Vuex)
 
 const getDefaultState = () => ({
   user: null,
+  token: null,
   listBoard: null,
   board: null,
 })
 export const store = new Vuex.Store({
   state: getDefaultState(),
   mutations: {
+    setToken(state, token) {
+      state.token = token
+    },
     setAuth(state, auth) {
-      state.user = {
-        email: auth.email,
-        token: auth.idToken,
-        idUser: auth.localId,
-        isLogin: auth.idToken ? true : false,
-        name: auth.displayName,
-        image: auth.photoURL
-      }
+      console.log(auth);
+      state.user = { ...auth }
     },
     clearToken(state) {
       Object.assign(state, getDefaultState())
@@ -34,113 +34,136 @@ export const store = new Vuex.Store({
       state.listBoard = list;
     },
     setBoard(state, board) {
-      state.board = board
+      state.board = { ...board }
     },
-    addNewTask(state, task) {
-      let list = state.board.listTask || [];
-      list.push(task)
-      state.board.listTask = list
+    addNewDeck(state, deck) {
+      state.board.decks = state.board.decks || [];
+      state.board.decks.push({ ...deck })
     },
 
 
   },
   actions: {
-    login({ dispatch }, params) {
+    login({ commit, dispatch }, params) {
       return new Promise((resolve, reject) => {
-        services.accountService.authenticate({
-          isLogin: true,
-          email: params.email,
-          password: params.password
-        })
-          .then((response) => {
-            if (response.data) {
+        var result = null
+        if (params.isLogin) {
+          result = auth.login({
+            email: params.email,
+            password: params.password
+          })
+        }
+        else {
+          result = auth.register({
+            email: params.email,
+            password: params.password,
+            sex: params.sex,
+            avatar: params.avatar,
+            name: params.name
+          })
+        }
 
-              dispatch('setToken', response.data)
+        result.then((response) => {
+          if (response) {
+            if (response.headers) {
+              if (response.headers.authorization) {
+                dispatch('setToken', response.headers.authorization)
+                auth.secret().then(val => {
+                  if (val) {
+                    commit('setAuth', val.data)
+                  }
+                  resolve({
+                    success: true
+                  })
+                })
+
+              }
+            }
+          }
+        }).catch(error => {
+          reject({
+            message: error.data
+          })
+        })
+
+      })
+    },
+
+    /*   loginWithGmail({ commit, dispatch }) {
+        return new Promise((resolve, reject) => {
+          services.accountService.loginWithGmail().then(response => {
+            if (response.user) {
+              let data = {
+                idToken: response.credential.idToken,
+                expiresIn: 60 * 60,
+                email: response.additionalUserInfo.profile.email,
+                localId: response.additionalUserInfo.profile.id,
+              }
+              commit('setAuth', data)
+              dispatch('setToken', data)
               resolve({
                 success: true
               })
+     
             }
-          }).catch(error => {
-            reject(error)
           })
-      })
-    },
-    loginWithGmail({ commit, dispatch }) {
-      return new Promise((resolve, reject) => {
-        services.accountService.loginWithGmail().then(response => {
-          if (response.user) {
-            let data = {
-              idToken: response.credential.idToken,
-              expiresIn: 60 * 60,
-              email: response.additionalUserInfo.profile.email,
-              localId: response.additionalUserInfo.profile.id,
-            }
-            commit('setAuth', data)
-            dispatch('setToken', data)
-            resolve({
-              success: true
+            .catch(error => {
+              reject(error)
             })
-
-          }
         })
-          .catch(error => {
-            reject(error)
-          })
-      })
+     
+      }, */
+    setToken({ commit }, token) {
+      let expToken = new Date().setDate(new Date().getDate() + 2)
+      Vue.$cookies.set('token', token, expToken)
+      commit('setToken', token);
 
     },
-    setToken({ commit }, user) {
-      let expToken = new Date().getTime() + user.expiresIn * 1000;
-      Vue.$cookies.set('token', user.idToken, expToken)
-      Vue.$cookies.set('email', user.email, expToken)
-      Vue.$cookies.set('idUser', user.localId, expToken)
-      Vue.$cookies.set('displayName ', user.displayName, expToken)
-      Vue.$cookies.set('photoURL', user.photoURL, expToken)
-
-      commit('setAuth', user);
-
-    },
-
     getCookie({ commit }) {
-      console.log('check cookie');
       const token = Vue.$cookies.get('token')
-      const email = Vue.$cookies.get('email')
-      const idUser = Vue.$cookies.get('idUser')
-      const displayName = Vue.$cookies.get('displayName')
-      const photoURL = Vue.$cookies.get('photoURL')
-
       if (!token)
         commit('clearToken')
-      commit('setAuth', { idToken: token, email: email, localId: idUser, displayName, photoURL })
+
     },
     userLoggout({ commit }) {
       Vue.$cookies.remove('token')
-      Vue.$cookies.remove('email')
-      Vue.$cookies.remove('idUser')
-      Vue.$cookies.remove('displayName')
-      Vue.$cookies.remove('photoURL')
       commit('clearToken')
     },
+    //User
+    updateUser({ commit }, user) {
+      return new Promise((resolve, reject) => {
+        service.userService.updateUser(user).then(result => {
+          if (result.status == 200) {
+            commit('setAuth', user)
+            resolve({
+              success: true
+            })
+          }
+        }).catch(error => {
+          reject(error)
+        })
+      })
+    },
+
+    //Board
     async getAllBoard({ commit }) {
-      let list = await services.boardService.getAllBoard()
-      commit('setListBoard', list)
+      await boardService.getAllBoard().then(result => {
+        if (result) {
+          if (result.data) {
+            if (result.data.boards) {
+              commit('setListBoard', result.data.boards)
+            }
+          }
+        }
+      })
     },
     async getBoard({ commit }, id) {
-      let board = await services.boardService.getBoard(id);
-      let listIdTask = board.listTask
-      console.log(listIdTask);
-      /*  for (id in listIdTask) {
-         let task =  services.taskManagement.getAllTask(id)
-         listTask.push(task)
-       } */
-      commit('setBoard', board)
-    },
-
-
-    // Task
-    async addNewTask({ commit }, task) {
-      await services.taskManagement.addNewTask(task)
-      commit('addNewTask', task)
+      await boardService.getBoard(id).then(result => {
+        if (result.status == 200) {
+          let board = result.data.board
+          commit('setBoard', board)
+        }
+      })
     },
 
   },

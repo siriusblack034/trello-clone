@@ -1,4 +1,4 @@
-import firebase from "../firebase";
+/* import firebase from "../firebase";
 import { store } from '../store'
 const db = firebase.firebase_.database()
 const idUser = store.state.user.idUser
@@ -26,3 +26,4 @@ async function getAllTask(idTask) {
   })
   return list
 }
+ */

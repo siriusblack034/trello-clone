@@ -112,8 +112,8 @@
                 <v-radio-group v-model="info.sex">
                   <div class="d-flex align-center justify-space-around">
                     <h3 class="font-weight-medium">Giới tính:</h3>
-                    <v-radio label="Nam" value="male" class="mt-2"></v-radio>
-                    <v-radio label="Nữ" value="female"></v-radio>
+                    <v-radio label="Nam" value="nam" class="mt-2"></v-radio>
+                    <v-radio label="Nữ" value="nu"></v-radio>
                   </div>
                 </v-radio-group>
               </div>
@@ -184,7 +184,7 @@
 </template>
 
 <script>
-import { accountService } from "../services/account";
+import { mapActions } from "vuex";
 export default {
   computed: {
     checkPassword() {
@@ -259,6 +259,7 @@ export default {
     };
   },
   methods: {
+    ...mapActions(["login"]),
     showPassword(type) {
       if (type == "password") {
         if (this.password.text) {
@@ -277,32 +278,37 @@ export default {
       }
     },
     register() {
+      var loading = this.$loading.show();
       if (this.password.text == this.passwordAgain.text) {
         if (this.info.name) {
-          accountService
-            .registerAuth({
-              email: this.account,
-              password: this.password.text,
-              name: this.info.name,
-              sex: this.info.sex,
-            })
+          var avatar =
+            this.info.sex == "name"
+              ? "https://crosspointe.com/wp-content/uploads/2020/09/avatar-male.jpg"
+              : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTDEZ4I-pmXTea7WjywRkk5bQp3nTSxwEphfIoykACKhhDU9wXK6EBRqOHV540MG_KGOpM&usqp=CAU";
+
+          this.login({
+            isLogin: false,
+            email: this.account,
+            password: this.password.text,
+            name: this.info.name,
+            sex: this.info.sex,
+            avatar,
+          })
             .then((result) => {
               if (result.success) {
-                this.$router.push({ name: "Login" });
+                loading.hide();
+                this.$router.push({ name: "home-boards" });
               }
             })
             .catch((error) => {
-              if (error) {
-                if (error.data) {
-                  if (error.data.error.message == "EMAIL_EXISTS")
-                    this.error2 = "Đã tồn tại email này !";
-                }
-              }
+              console.log(error);
             });
         } else {
           this.error2 = "Cần nhập đủ thông tin!";
         }
       }
+      this.e1 = 1;
+      loading.hide();
     },
     nextStep() {
       this.checkError = true;

@@ -24,7 +24,6 @@ import HeaderAuth from "./layout/HeaderAuth.vue";
 import HeaderHome from "./layout/HeaderHome.vue";
 /* import Footer from "./layout/Footer.vue"; */
 import { mapActions, mapState } from "vuex";
-import BoardService from "./services/modules/board";
 export default {
   components: {
     HeaderAuth,
@@ -35,9 +34,7 @@ export default {
   async created() {
     window.addEventListener("scroll", this.handleScroll);
     this.$store.dispatch("getCookie");
-     BoardService.getAllBoard().then(result =>{
-      console.log(result);
-    });
+     
   },
   computed: {
     ...mapState(["user"]),

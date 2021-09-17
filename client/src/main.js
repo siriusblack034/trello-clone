@@ -8,15 +8,22 @@ import AOS from 'aos'
 import VueCookies from 'vue-cookies'
 import VueLoading from 'vue-loading-overlay'
 import 'vue-loading-overlay/dist/vue-loading.css'
-
+import VueSweetAlert from 'vue-sweetalert2'
+import 'sweetalert2/dist/sweetalert2.min.css';
+import GAuth from 'vue-google-oauth2'
 Vue.config.productionTip = false
 Vue.use(VueLoading, {
   color: 'blue',
   canCancel: false,
 })
+Vue.use(VueSweetAlert)
 Vue.use(VueCookies)
-
-
+const gauthOption = {
+  clientId: process.env.VUE_APP_GOOGLE_ID,
+  scope: 'profile email',
+  prompt: 'select_account'
+}
+Vue.use(GAuth, gauthOption)
 new Vue({
   created() {
     AOS.init()

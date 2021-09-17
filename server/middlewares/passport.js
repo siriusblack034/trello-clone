@@ -27,11 +27,8 @@ passport.use(new GooglePlusTokenStrategy({
   secret: config.GOOGLE_CLIENT_SECRET_CODE
 }, async (accessToken, refreshToken, profile, done) => {
   try {
-    console.log('accessToken', accessToken)
-    console.log('refresh', refreshToken)
-    console.log('profile', profile)
-
     //check user
+    console.log(profile);
     const user = await User.findOne({ authGoogleID: profile.id })
     if (user)
       return done(null, user)
@@ -84,6 +81,7 @@ passport.use(new localstrategy({
   usernameField: "email"
 }, async (email, password, done) => {
   try {
+    console.log("account", email, password);
     const user = await User.findOne({ email })
     if (!user)
       return done(null, false)

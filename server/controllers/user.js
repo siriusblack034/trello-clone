@@ -1,5 +1,4 @@
 const User = require('../models/User')
-
 const deleteUser = async (req, res, next) => {
   try {
     const { userId } = req.params
@@ -12,8 +11,13 @@ const deleteUser = async (req, res, next) => {
 
 const getUser = async (req, res, next) => {
   try {
-    const { userId } = req.params
-    const user = await User.findById(userId)
+    const user = {
+      name: req.user.name,
+      sex: req.user.sex,
+      avatar: req.user.avatar,
+      email: req.user.email
+    }
+
     return res.status(200).json({ user })
 
   } catch (error) {
@@ -23,10 +27,9 @@ const getUser = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
   try {
-    const { userId } = req.params
+    const userId = req.user._id
     await User.findByIdAndUpdate(userId, req.body)
     return res.status(200).json({ success: true })
-
   } catch (error) {
     next(error)
   }

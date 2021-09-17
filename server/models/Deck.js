@@ -5,7 +5,7 @@ const deckSchema = new Schema({
     type: String,
     required: true
   },
-  board: {
+  boardId: {
     type: Schema.Types.ObjectId,
     ref: 'Board'
   },

@@ -21,14 +21,18 @@
             hide-details
             color="white"
             outlined
-            v-model="board.nameBoard"
+            :value="board.name"
+            @change="changeNameBoard"
           ></v-text-field>
           <v-btn
             style="text-transform: none"
             height="40px"
             class="button-color mx-2 my-1"
           >
-            <v-icon color="yellow" class="font-weight-medium">
+            <v-icon
+              :color="board.star == true ? 'yellow' : ''"
+              class="font-weight-medium"
+            >
               mdi-star-outline
             </v-icon>
           </v-btn>
@@ -61,17 +65,18 @@
         ref="scroll_container"
         @mousewheel.prevent="scrollX"
       >
-        <Draggable id="board" :list="board.listTask">
+        <Draggable id="board" :list="board.decks" handle=".list-wrapper">
           <v-card
-            v-for="(task, idxBoard) in board.listTask"
-            :key="task.id"
+            v-for="(deck, indexDeck) in board.decks"
+            :key="deck._id"
             class="mx-4 pa-2 list-wrapper"
             :style="{ backgroundColor: '#ebecf0' }"
           >
             <div class="d-flex justify-space-between align-center list">
               <div class="my-text-style">
                 <v-text-field
-                  v-model="task.title"
+                  v-model="deck.title"
+                  @change="changeNameDeck(deck.title, deck._id)"
                   outlined
                   dense
                   hide-details
@@ -80,7 +85,7 @@
                 >
                 </v-text-field>
               </div>
-              <div class="list-delete" @click="removeListTask(idxBoard)">
+              <div class="list-delete" @click="removeDeck(indexDeck, deck._id)">
                 <v-tooltip bottom>
                   <template v-slot:activator="{ on, attrs }">
                     <v-hover v-slot="{ hover }" class="ml-2">
@@ -98,12 +103,13 @@
               <!-- delete list -->
             </div>
             <Draggable
-              :list="task.itemTask"
+              :list="deck.listTask"
               :group="{ name: 'task' }"
               v-bind="dragOptions"
+              handle=".list"
             >
               <v-card
-                v-for="(val, idxTask) in task.itemTask"
+                v-for="(val, idxTask) in task.listTask"
                 :key="val.id"
                 class="d-flex flex-column my-2 list"
               >
@@ -128,7 +134,7 @@
                         :color="chip.color"
                         :close="tagName"
                         text-color="white"
-                        @click:close="closeTag(idxTag, idxTask, idxBoard)"
+                        @click:close="closeTag(idxTag, idxTask, indexDeck)"
                         @click="tagName = !tagName"
                       >
                         {{ tagName ? chip.nameTask : "" }}
@@ -198,8 +204,34 @@
               </v-card>
             </Draggable>
             <!-- <div ></div> -->
+            <div
+              v-if="indexDeck === indexTask"
+              class="d-flex flex-column align-start"
+            >
+              <div class="my-text-style">
+                <v-text-field
+                  outlined
+                  dense
+                  hide-details
+                  v-model="newTask"
+                  color="primary"
+                  placeholder="Nhập tiêu đề danh sách ... "
+                  class="font-weight-bold"
+                >
+                </v-text-field>
+              </div>
+              <div class="my-2 pl-2">
+                <v-btn small color="grey" @click="addTask()"
+                  >Thêm danh sách</v-btn
+                >
+                <v-icon class="ml-2" @click="openAddTask(10000)"
+                  >mdi-close</v-icon
+                >
+              </div>
+            </div>
             <!-- add Task -->
             <v-hover
+              v-if="indexDeck !== indexTask"
               v-slot="{ hover }"
               class="d-flex align-center justify-start"
             >
@@ -207,7 +239,7 @@
                 class="py-2 pl-2"
                 style="cursor: pointer"
                 :style="{ backgroundColor: hover ? 'rgba(0,0,0,0.3)' : '' }"
-                @click="addTask = true"
+                @click="openAddTask(indexDeck)"
               >
                 <a
                   class="black--text"
@@ -219,14 +251,14 @@
               </div>
             </v-hover>
           </v-card>
-          <v-card class="list-wrapper">
-            <div v-if="addBoard" class="d-flex flex-column align-start list">
+          <v-card class="list-wrapper1">
+            <div v-if="addDeck" class="d-flex flex-column align-start list">
               <div class="my-text-style">
                 <v-text-field
                   outlined
                   dense
                   hide-details
-                  v-model="newBoard"
+                  v-model="newDeck"
                   color="primary"
                   placeholder="Nhập tiêu đề danh sách ... "
                   class="font-weight-bold"
@@ -234,18 +266,14 @@
                 </v-text-field>
               </div>
               <div class="my-2 pl-2">
-                <v-btn small color="grey" @click="addNewBoard()"
-                  >Thêm danh sách</v-btn
-                >
-                <v-icon class="ml-2" @click="addBoard = false"
-                  >mdi-close</v-icon
-                >
+                <v-btn small color="grey" @click="add()">Thêm danh sách</v-btn>
+                <v-icon class="ml-2" @click="addDeck = false">mdi-close</v-icon>
               </div>
             </div>
             <v-btn
               v-else
               style="text-transform: none; !important; width:100%"
-              @click="addBoard = true"
+              @click="addDeck = true"
             >
               <v-icon>mdi-plus</v-icon>
               Thêm danh sách khác
@@ -262,7 +290,7 @@
 import Draggable from "vuedraggable";
 import { mapActions } from "vuex";
 import ModalTask from "../components/ModalTask.vue";
-import { uuid } from "../utils";
+import service from "../services";
 export default {
   components: {
     Draggable,
@@ -272,8 +300,9 @@ export default {
     const loading = this.$loading.show();
     let id = this.$route.params.boardId;
     await this.getBoard(id);
-    loading.hide();
     this.board = this.$store.state.board;
+    document.title = `${this.board.name} | Trà Lô`;
+    loading.hide();
   },
 
   computed: {
@@ -286,7 +315,6 @@ export default {
     },
     dragOptions() {
       return {
-        board: "",
         animation: 1,
         group: "description",
         disabled: false,
@@ -297,15 +325,17 @@ export default {
 
   data() {
     return {
-      board: "",
+      board: {},
       tagName: false,
-      addBoard: false,
+      addDeck: false,
       task: {},
-      newBoard: "",
+      newDeck: "",
+      newTask: "",
+      indexTask: "",
     };
   },
   methods: {
-    ...mapActions(["getBoard", "addNewTask"]),
+    ...mapActions(["getBoard", "addNewDeck"]),
     log(evt) {
       window.console.log(evt);
     },
@@ -317,16 +347,21 @@ export default {
     closeTag(tag, task, board) {
       this.board.listTask[board].itemTask[task].tag.splice(tag, 1);
     },
-    addNewBoard() {
-      if (this.newBoard) {
-        let idTask = uuid();
-        this.addNewTask({
-          idBoard: this.$route.params.boardId,
-          idTask,
-          title: this.newBoard,
-        });
-        this.newBoard = "";
-        this.addBoard = false;
+    add() {
+      if (this.newDeck) {
+        service.deckService
+          .newDeck({
+            title: this.newDeck,
+            boardId: this.$route.params.boardId,
+          })
+          .then((result) => {
+            if (result.status == 200) {
+              this.board.decks.push(result.data.deck);
+              this.newDeck = "";
+              this.addDeck = false;
+              this.addTask.push(false);
+            }
+          });
       }
     },
     showModal(task) {
@@ -345,8 +380,34 @@ export default {
         return taskUnComplete.length == task.length ? true : false;
       }
     },
-    removeListTask(index) {
-      this.board.listTask.splice(index, 1);
+    removeDeck(index, id) {
+      service.deckService.deleteDeck(id).then((result) => {
+        if (result.status == 200) {
+          this.board.decks.splice(index, 1);
+          this.addTask.splice(false, 1);
+        }
+      });
+    },
+    changeNameBoard(title) {
+      service.boardService
+        .updateBoard({ name: title }, this.$route.params.boardId)
+        .then((result) => {
+          if (result.status == 200) {
+            this.board.name = title;
+            document.title = title + " | Trà Lô";
+          }
+        });
+    },
+    changeNameDeck(title, idDeck) {
+      service.deckService.updateDeck({ title }, idDeck).then((result) => {
+        if (result.status == 200) {
+          console.log(result);
+        }
+      });
+    },
+    openAddTask(index) {
+      console.log(index);
+      this.indexTask = index;
     },
   },
 };
@@ -421,7 +482,15 @@ export default {
   bottom: 0;
   left: 0;
 }
-
+.list-wrapper1 {
+  width: 250px;
+  margin: 0 4px;
+  height: auto;
+  box-sizing: border-box;
+  display: inline-block !important;
+  vertical-align: top;
+  white-space: nowrap !important;
+}
 .list-wrapper {
   width: 250px;
   margin: 0 4px;

@@ -7,6 +7,7 @@ const deckRoute = require('./routes/deck')
 const taskRoute = require('./routes/task')
 const authRoute = require('./routes/auth')
 const userRoute = require('./routes/user')
+const uploadImageRoute = require('./routes/uploadImage')
 const cors = require('cors')
 const { MONGODB_URL } = require('./configs')
 //config env
@@ -25,13 +26,19 @@ mongooseClient.connect(MONGODB_URL).then(() => {
 app.use(logger('dev'))
 app.use(bodyParser.json())
 app.use(secureApi())
-app.use(cors())
+app.use('/uploadsImage', express.static('uploadsImage'))
+const corsOptions = {
+  exposedHeaders: "Authorization"
+}
+
+app.use(cors(corsOptions))
 //Routes
 app.use('/boards', boardRoute)
 app.use('/decks', deckRoute)
 app.use('/tasks', taskRoute)
 app.use('/auth', authRoute)
 app.use('/user', userRoute)
+app.use('/upload-image', uploadImageRoute)
 app.get('/', (req, res, next) => {
   return res.status(200).json({
     message: "Server is OK !"

@@ -1,20 +1,21 @@
 <template>
   <div class="home-page container">
     <section class="viewed-recently">
-      <div class="d-flex algin-center">
-        <v-icon class="pr-3 pb-1" color="black">mdi-history</v-icon>
-        <h3>Đã xem gần đây</h3>
+      <div class="d-flex algin-center mb-2">
+        <v-icon class="pr-3 pb-1" color="black">mdi-star-outline</v-icon>
+        <h3 class="">Gắn Sao</h3>
       </div>
       <div class="board-list">
         <BoardItem
           :item="item"
-          v-for="(item, index) in recently"
+          v-for="(item, index) in listStar"
           :key="index"
         />
       </div>
     </section>
     <section class="viewed-recently">
-      <div class="d-flex algin-center">
+      <div class="d-flex algin-center mb-2">
+        <v-icon class="pr-3 pb-1" color="black">mdi-history</v-icon>
         <h2>Các không gian làm việc của bạn</h2>
       </div>
       <div class="board-list">
@@ -22,7 +23,7 @@
           :item="item"
           v-for="(item, index) in recently"
           :key="index"
-          @click="nextBoard(item)"
+          @changeStar="changeStar"
         />
         <div
           class="board d-flex flex-column algin-center justify-center"
@@ -49,7 +50,7 @@ export default {
     BoardItem,
     ModalBoard,
   },
-  async created() {
+  async mounted() {
     let loading = this.$loading.show();
     await this.getAllBoard();
     this.recently = this.listBoard;
@@ -57,6 +58,9 @@ export default {
   },
   computed: {
     ...mapState(["listBoard"]),
+    listStar() {
+      return this.recently.filter((board) => board.star);
+    },
   },
   data() {
     return {
@@ -68,6 +72,9 @@ export default {
     ...mapActions(["getAllBoard"]),
     newBoard() {
       this.$refs.ModalBoard.open();
+    },
+    changeStar(star) {
+      console.log(star);
     },
   },
 };

@@ -1,8 +1,11 @@
-import req from 'axios'
+import authService from './modules/auth'
+import deckService from './modules/deck'
+import boardService from './modules/board'
+import userService from './modules/user'
 
-export default () => {
-  return req.create({
-    baseURL: process.env.VUE_APP_API
-  })
-
+export default {
+  authService,
+  deckService,
+  boardService,
+  userService
 }

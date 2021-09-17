@@ -79,6 +79,15 @@ export default {
   },
   data() {
     return {
+      params: {
+        client_id:
+          "674926875872-t4veb122uilveljl5iepkd81s9d3idjb.apps.googleusercontent.com",
+      },
+      renderParams: {
+        width: 320,
+        height: 42,
+        longtitle: true,
+      },
       associates: [
         {
           name: "Facebook",
@@ -115,7 +124,9 @@ export default {
   },
   methods: {
     ...mapActions(["login", "loginWithGmail"]),
+
     showPassword() {
+      console.log(process.env.VUE_APP_API);
       if (this.password.text) {
         this.password.type =
           this.password.type == "password" ? "text" : "password";
@@ -127,6 +138,7 @@ export default {
       if (this.account && this.password.text) {
         let loading = this.$loading.show();
         this.login({
+          isLogin: true,
           email: this.account,
           password: this.password.text,
         })
@@ -137,23 +149,16 @@ export default {
             }
           })
           .catch((error) => {
-            loading.hide();
             console.log(error);
             this.messError = "Sai mật khẩu | tài khoản !";
           });
+        loading.hide();
       }
     },
-    loginWithAssociate(name) {
+    async loginWithAssociate(name) {
       if (name == "Gmail") {
-        this.loginWithGmail()
-          .then((result) => {
-            if (result.success) {
-              this.$router.push({ name: "HomeBoards" });
-            }
-          })
-          .catch(() => {
-            this.messError = "Lỗi đăng nhập !";
-          });
+        const googleUser = await this.$gAuth.signIn();
+        console.log(googleUser);
       }
     },
   },

@@ -1,4 +1,4 @@
-import firebase from '../firebase.js'
+/* import firebase from '../firebase.js'
 export const fileUpload = {
   imageUpload
 }
@@ -8,4 +8,4 @@ function imageUpload(data) {
     data.uploadValue = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
   })
 
-}
+} */

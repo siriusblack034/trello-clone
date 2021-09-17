@@ -4,9 +4,13 @@ const Task = require('../models/Task');
 
 const createBoard = async (req, res, next) => {
   try {
-    const newBoard = new Board(req.body)
+    const board = {
+      userId: req.user._id,
+      ...req.body
+    }
+    const newBoard = new Board(board)
     await newBoard.save()
-    return res.status(200).json({ board: newBoard })
+    return res.status(200).json({ boardId: newBoard._id })
   } catch (error) {
     next(error)
   }
@@ -23,7 +27,7 @@ const deleteBoard = async (req, res, next) => {
 }
 const getAllBoard = async (req, res, next) => {
   try {
-    const { userId } = req.body
+    const userId = req.user._id
     const boards = await Board.find({ userId: userId })
     return res.status(200).json({ boards })
   } catch (error) {
@@ -33,22 +37,27 @@ const getAllBoard = async (req, res, next) => {
 const getBoard = async (req, res, next) => {
   try {
     const { boardId } = req.params
-    const { userId } = req.body
-    const board = await Board.findOne({ _id: boardId, userId: userId })
-    const listDeck = await Deck.find({ board: boardId })
+
+    const board = await Board.findOne({ _id: boardId })
+    const listDeck = await Deck.find({ boardId: boardId })
     var decks = null;
     if (listDeck) {
       decks = await Promise.all(listDeck.map(async deck => {
         let listTask = await Task.find({ deck: deck._id })
         let title = deck.title
         return {
-          title,
+          ...deck._doc,
           listTask
         }
       }))
     }
-
-    return res.status(200).json({ board, decks })
+    console.log(decks);
+    return res.status(200).json({
+      board: {
+        ...board._doc,
+        decks
+      }
+    })
 
   } catch (error) {
     next(error)

@@ -1,4 +1,4 @@
-import firebase from "../firebase";
+/* import firebase from "../firebase";
 import { store } from '../store'
 const db = firebase.firebase_.database()
 export const boardService = {
@@ -50,3 +50,4 @@ function removeBoard(id) {
 
 
 
+ */

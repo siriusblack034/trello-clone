@@ -49,8 +49,9 @@ UserSchema.pre('save', async function (next) {
 UserSchema.methods.isValidPassword = async function (newPass) {
   try {
     return await bcrypt.compare(newPass, this.password)
+
   } catch (error) {
-    next(error)
+    throw new Error(error)
   }
 }
 

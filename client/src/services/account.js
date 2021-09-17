@@ -1,4 +1,4 @@
-import axios from 'axios'
+/* import axios from 'axios'
 import { constant } from '../contants/api'
 import firebase from '../firebase.js'
 export const accountService = {
@@ -40,4 +40,4 @@ function loginWithGmail() {
   const ggProvider = new firebase.firebase_.auth.GoogleAuthProvider();
   return firebase.firebase_.auth().signInWithPopup(ggProvider)
 
-}
+} */

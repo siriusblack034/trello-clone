@@ -79,10 +79,7 @@
           <template v-slot:activator="{ on, attrs }">
             <v-btn icon v-bind="attrs" v-on="on">
               <v-avatar>
-                <img
-                  src="https://cdn.vuetifyjs.com/images/john.jpg"
-                  alt="John"
-                />
+                <img :src="srcImage" alt="John" />
               </v-avatar>
             </v-btn>
           </template>
@@ -120,6 +117,7 @@
 
 <script>
 import { mapActions, mapState } from "vuex";
+import helpers from "../utils";
 export default {
   props: {
     scroll: {
@@ -129,32 +127,45 @@ export default {
     },
   },
   mounted() {
-    this.isLogin = this.user ? this.user.isLogin : false;
+    this.isLogin = this.token ? true : false;
+    this.inform = this.user;
   },
   computed: {
-    ...mapState(["user"]),
+    ...mapState(["token", "user"]),
     nameDisplay() {
-      return this.user.name || "Tài khoản";
+      return this.inform.name || "Tài khoản";
+    },
+    srcImage() {
+      console.log(helpers.srcImage(this.inform.avatar));
+      return helpers.srcImage(this.inform.avatar);
     },
   },
   data() {
     return {
       account: ["Thông tin tài khoản", "Đổi mật khẩu", "Đăng xuất"],
       isLogin: false,
+      inform: null,
     };
   },
   methods: {
     ...mapActions(["userLoggout"]),
     actionAccount(index) {
       if (index == 0) {
-        // push account
-        console.log(this.user.idToken);
+        this.$router.push({ name: "User" });
       } else if (index == 1) {
         this.$router.push({ name: "ChangePassword" });
       } else if (index == 2) {
+        this.isLogin = false;
         this.userLoggout();
-        this.$router.push({ name: "LoggedOut" });
+        console.log(1234);
+        this.$router.push({ path: "/logged-out" });
       }
+    },
+  },
+  watch: {
+    user(newVal, oldVal) {
+      console.log(oldVal);
+      this.inform = newVal;
     },
   },
 };

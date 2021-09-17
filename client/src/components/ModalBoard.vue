@@ -75,8 +75,8 @@
 <script>
 import { mapMutations } from "vuex";
 /* import ChooseBackground from "../components/ChooseBackground.vue"; */
-import services from "../services";
-import { uuid } from "../utils";
+/* import services from "../services"; */
+import boardService from "../services/modules/board";
 export default {
   components: {
     /* ChooseBackground */
@@ -151,22 +151,23 @@ export default {
       }
     },
     newBoard() {
-      let id = uuid();
       let board = {
-        id,
         name: this.nameBoard,
         background: {
           color: this.color,
           image: this.image,
         },
       };
-      this.addNewBoard(board);
-      services.boardService.writeBoard(board);
-      this.$router.push({
-        name: "Board",
-        params: {
-          boardId: id,
-        },
+      boardService.newBoard(board).then((result) => {
+        if (result.status == 200) {
+          this.addNewBoard(board);
+          this.$router.push({
+            name: "Board",
+            params: {
+              boardId: result.data.boardId,
+            },
+          });
+        }
       });
     },
   },
