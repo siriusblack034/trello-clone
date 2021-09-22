@@ -26,8 +26,14 @@ const authGoogle = async (req, res, next) => {
 }
 const authFacebook = async (req, res, next) => {
   const token = encoded(req.user._id)
+  const user = {
+    email: req.user.email,
+    avatar: req.user.avatar.url,
+    sex: req.user.sex,
+    name: req.user.name
+  }
   res.setHeader('Authorization', token)
-  return res.status(200).json({ resources: true })
+  return res.status(200).json({ user })
 
 }
 const signUp = async (req, res, next) => {

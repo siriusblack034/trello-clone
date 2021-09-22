@@ -3,7 +3,8 @@ export default {
   login(user) {
     return api.post('auth/sign-in', user)
   },
-  loginWithFacebook() {
+  loginWithFacebook(token) {
+    return api.post('auth/facebook', { access_token: token })
 
   },
   loginWithGoogle(token) {

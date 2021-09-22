@@ -71,11 +71,15 @@
 
 <script>
 import { mapActions } from "vuex";
+import { initFbsdk } from "../config/fb";
 export default {
   computed: {
     checkPassword() {
       return this.password.text ? this.password.icon : "mdi-lock";
     },
+  },
+  mounted() {
+    initFbsdk();
   },
   data() {
     return {
@@ -114,7 +118,7 @@ export default {
     };
   },
   methods: {
-    ...mapActions(["login", "loginWithGmail"]),
+    ...mapActions(["login", "loginWithGmail", "loginWithFacebook"]),
 
     showPassword() {
       console.log(process.env.VUE_APP_API);
@@ -156,6 +160,18 @@ export default {
             console.log(error);
             this.messError = error.message;
           });
+      } else if (name == "Facebook") {
+        window.FB.login((response) => {
+          const token = response.authResponse.accessToken;
+          this.loginWithFacebook(token)
+            .then((result) => {
+              if (result.success) this.$router.push({ name: "HomeBoards" });
+            })
+            .catch((error) => {
+              console.log(error);
+              this.messError = error.message;
+            });
+        }, this.params);
       }
     },
   },

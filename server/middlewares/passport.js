@@ -70,7 +70,10 @@ passport.use(new FacebookTokenStrategy({
       email: profile.emails[0].value,
       authFacebookID: profile.id,
       name: profile.displayName,
-      avatar: profile.photos[0].value
+      avatar: {
+        url: profile.photos[0].value,
+        address: 'web'
+      }
     })
     await newUser.save()
     done(null, newUser)
