@@ -281,18 +281,12 @@ export default {
       var loading = this.$loading.show();
       if (this.password.text == this.passwordAgain.text) {
         if (this.info.name) {
-          var avatar =
-            this.info.sex == "name"
-              ? "https://crosspointe.com/wp-content/uploads/2020/09/avatar-male.jpg"
-              : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTDEZ4I-pmXTea7WjywRkk5bQp3nTSxwEphfIoykACKhhDU9wXK6EBRqOHV540MG_KGOpM&usqp=CAU";
-
           this.login({
             isLogin: false,
             email: this.account,
             password: this.password.text,
             name: this.info.name,
             sex: this.info.sex,
-            avatar,
           })
             .then((result) => {
               if (result.success) {

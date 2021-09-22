@@ -5,7 +5,7 @@ import boardService from '../services/modules/board'
 import createPersistedState from 'vuex-persistedstate'
 import service from '../services'
 Vue.use(Vuex)
-
+const vue = new Vue({})
 const getDefaultState = () => ({
   user: null,
   token: null,
@@ -19,7 +19,6 @@ export const store = new Vuex.Store({
       state.token = token
     },
     setAuth(state, auth) {
-      console.log(auth);
       state.user = { ...auth }
     },
     clearToken(state) {
@@ -89,30 +88,22 @@ export const store = new Vuex.Store({
       })
     },
 
-    /*   loginWithGmail({ commit, dispatch }) {
-        return new Promise((resolve, reject) => {
-          services.accountService.loginWithGmail().then(response => {
-            if (response.user) {
-              let data = {
-                idToken: response.credential.idToken,
-                expiresIn: 60 * 60,
-                email: response.additionalUserInfo.profile.email,
-                localId: response.additionalUserInfo.profile.id,
-              }
-              commit('setAuth', data)
-              dispatch('setToken', data)
-              resolve({
-                success: true
-              })
-     
-            }
-          })
-            .catch(error => {
-              reject(error)
-            })
+    async loginWithGmail({ commit, dispatch }) {
+      const googleUser = await vue.$gAuth.signIn();
+      const token = googleUser.Zb.access_token
+      return new Promise((resolve, reject) => {
+        service.authService.loginWithGoogle(token).then((result) => {
+          if (result.data) {
+            dispatch('setToken', result.headers.authorization)
+            commit('setAuth', result.data.user)
+            resolve({ success: true })
+          }
+        }).catch(() => {
+          reject({ message: 'Lỗi đăng nhập !' })
         })
-     
-      }, */
+      })
+
+    },
     setToken({ commit }, token) {
       let expToken = new Date().setDate(new Date().getDate() + 2)
       Vue.$cookies.set('token', token, expToken)
@@ -134,7 +125,7 @@ export const store = new Vuex.Store({
       return new Promise((resolve, reject) => {
         service.userService.updateUser(user).then(result => {
           if (result.status == 200) {
-            commit('setAuth', user)
+            commit('setAuth', { ...user, avatar: user.avatar.url })
             resolve({
               success: true
             })
@@ -165,7 +156,6 @@ export const store = new Vuex.Store({
         }
       })
     },
-
   },
   plugins: [createPersistedState()]
 })

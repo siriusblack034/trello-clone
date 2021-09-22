@@ -9,9 +9,9 @@ const passportConfig = require('../middlewares/passport')
 
 router.route('/sign-up').post(authCtr.signUp)
 router.route('/sign-in').post(passport.authenticate('local', { session: false }), authCtr.signIn)
-router.route('/google').post(passport.authenticate('google-plus-token', { session: false }), authCtr.authGoogle)
+router.route('/google').post(passport.authenticate('google-token', { session: false }), authCtr.authGoogle)
 router.route('/facebook').post(passport.authenticate('facebook-token', { session: false }), authCtr.authFacebook)
-router.route('/change-password').post(passport.authenticate('jwt',{session:false}),authCtr.changePassword)
+router.route('/change-password').post(passport.authenticate('jwt', { session: false }), authCtr.changePassword)
 router.route('/secret').get(passport.authenticate('jwt', {
   session: false,
 }), authCtr.secret)

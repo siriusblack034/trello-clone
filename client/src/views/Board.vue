@@ -65,7 +65,12 @@
         ref="scroll_container"
         @mousewheel.prevent="scrollX"
       >
-        <Draggable id="board" :list="board.decks" handle=".list-wrapper">
+        <Draggable
+          id="board"
+          :list="board.decks"
+          handle=".list-wrapper"
+          @change="moved"
+        >
           <v-card
             v-for="(deck, indexDeck) in board.decks"
             :key="deck._id"
@@ -76,7 +81,7 @@
               <div class="my-text-style">
                 <v-text-field
                   v-model="deck.title"
-                  @change="changeNameDeck(deck.title, deck._id)"
+                  @change="changeNameDeck(deck.title, deck._id, indexDeck)"
                   outlined
                   dense
                   hide-details
@@ -103,13 +108,14 @@
               <!-- delete list -->
             </div>
             <Draggable
-              :list="deck.listTask"
+              :list="deck.tasks"
               :group="{ name: 'task' }"
               v-bind="dragOptions"
               handle=".list"
+              @change="movedTask"
             >
               <v-card
-                v-for="(val, idxTask) in task.listTask"
+                v-for="(val, idxTask) in deck.tasks"
                 :key="val.id"
                 class="d-flex flex-column my-2 list"
               >
@@ -129,7 +135,7 @@
                           font-size: 10px;
                         "
                         :style="{ height: tagName ? '15px' : '10px' }"
-                        v-for="(chip, idxTag) in val.tag"
+                        v-for="(chip, idxTag) in val.tags"
                         :key="idxTag"
                         :color="chip.color"
                         :close="tagName"
@@ -143,6 +149,9 @@
                     <v-textarea
                       v-model="val.title"
                       outlined
+                      @change="
+                        changeNameTask(val.title, val._id, idxTask, indexDeck)
+                      "
                       dense
                       hide-details
                       color="black"
@@ -151,7 +160,8 @@
                       auto-grow
                     >
                     </v-textarea>
-                    <div v-if="val.description || val.task">
+                    {{ val.toDo }}
+                    <div v-if="val.description || val.toDo.length > 0">
                       <v-divider></v-divider>
                       <div
                         class="d-flex align-center justify-start py-2 pl-2"
@@ -165,29 +175,30 @@
                           </template>
                           <span>Thẻ có miêu tả</span>
                         </v-tooltip>
-                        <v-tooltip bottom v-if="val.task">
+                        <v-tooltip bottom v-if="val.toDo.length != 0">
                           <template v-slot:activator="{ on, attrs }">
                             <div
                               class="d-flex align-center justify-center pl-2"
                             >
                               <v-icon
                                 :color="
-                                  checkTaskComplete(val.task)
+                                  checkTaskComplete(val.toDo)
                                     ? 'primary'
                                     : 'none'
                                 "
                                 small
+                                class="mr-1"
                                 v-bind="attrs"
                                 v-on="on"
                                 >mdi-checkbox-marked-outline</v-icon
                               >
                               <span
                                 :class="
-                                  checkTaskComplete(val.task)
+                                  checkTaskComplete(val.toDo)
                                     ? 'primary--text'
                                     : ''
                                 "
-                                >{{ checkList(val.task) }}</span
+                                >{{ checkList(val.toDo) }}</span
                               >
                             </div>
                           </template>
@@ -217,11 +228,15 @@
                   color="primary"
                   placeholder="Nhập tiêu đề danh sách ... "
                   class="font-weight-bold"
+                  @keypress.enter="addNewTask(deck._id, indexDeck)"
                 >
                 </v-text-field>
               </div>
               <div class="my-2 pl-2">
-                <v-btn small color="grey" @click="addTask()"
+                <v-btn
+                  small
+                  color="grey"
+                  @click="addNewTask(deck._id, indexDeck)"
                   >Thêm danh sách</v-btn
                 >
                 <v-icon class="ml-2" @click="openAddTask(10000)"
@@ -251,7 +266,7 @@
               </div>
             </v-hover>
           </v-card>
-          <v-card class="list-wrapper1">
+          <v-card class="list-wrapper1" :style="{ opacity: addDeck ? 1 : 0.5 }">
             <div v-if="addDeck" class="d-flex flex-column align-start list">
               <div class="my-text-style">
                 <v-text-field
@@ -272,8 +287,9 @@
             </div>
             <v-btn
               v-else
-              style="text-transform: none; !important; width:100%"
+              style="text-transform: none; !important; width:100%;"
               @click="addDeck = true"
+              width="100%"
             >
               <v-icon>mdi-plus</v-icon>
               Thêm danh sách khác
@@ -345,14 +361,16 @@ export default {
       document.getElementById("board").scrollLeft -= delta * 50;
     },
     closeTag(tag, task, board) {
-      this.board.listTask[board].itemTask[task].tag.splice(tag, 1);
+      this.board.decks[board].tasks[task].tags.splice(tag, 1);
     },
     add() {
       if (this.newDeck) {
+        let location = this.board.decks.length;
         service.deckService
           .newDeck({
             title: this.newDeck,
             boardId: this.$route.params.boardId,
+            location,
           })
           .then((result) => {
             if (result.status == 200) {
@@ -398,16 +416,49 @@ export default {
           }
         });
     },
-    changeNameDeck(title, idDeck) {
+    changeNameDeck(title, idDeck, index) {
       service.deckService.updateDeck({ title }, idDeck).then((result) => {
         if (result.status == 200) {
-          console.log(result);
+          this.board.decks[index].title = title;
         }
       });
     },
+    changeNameTask(title, idTask) {
+      service.taskService.updateTask({ title }, idTask);
+    },
     openAddTask(index) {
-      console.log(index);
       this.indexTask = index;
+    },
+    async moved(event) {
+      let newIndex = event.moved.newIndex;
+      let oldIndex = event.moved.oldIndex;
+      let el = event.moved.element;
+      let elIdOld = el._id;
+      let elIdNew = this.board.decks[oldIndex]._id;
+      await service.deckService.updateDeck({ location: newIndex }, elIdOld);
+      await service.deckService.updateDeck({ location: oldIndex }, elIdNew);
+    },
+    async movedTask(event) {
+      console.log(event);
+    },
+    checkMove(event) {
+      console.log(event);
+    },
+    addNewTask(deckId, index) {
+      if (this.newTask) {
+        let location = this.board.decks[index].tasks.length;
+        let task = {
+          title: this.newTask,
+          deckId,
+          location,
+        };
+        service.taskService.newTask(task).then((result) => {
+          if (result.status == 200) {
+            this.board.decks[index].tasks.push(task);
+            this.newTask = "";
+          }
+        });
+      }
     },
   },
 };
@@ -431,6 +482,8 @@ export default {
 }
 .list div:hover a {
   display: block;
+}
+.add-deck {
 }
 </style>
 <style>

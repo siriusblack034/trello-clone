@@ -5,10 +5,15 @@ const deckSchema = new Schema({
     type: String,
     required: true
   },
+  location: {
+    type: Number,
+    required: true
+  },
   boardId: {
     type: Schema.Types.ObjectId,
     ref: 'Board'
   },
+
   tasks: [{
     type: Schema.Types.ObjectId,
     ref: 'Task'

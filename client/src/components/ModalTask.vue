@@ -1,5 +1,10 @@
 <template>
-  <v-dialog v-model="isOpen" min-height="600px" max-width="700px">
+  <v-dialog
+    v-model="isOpen"
+    min-height="600px"
+    max-width="700px"
+    @click:outside="saveTask"
+  >
     <v-card style="color: #37474f !important">
       <v-hover v-slot="{ hover }">
         <template>
@@ -41,7 +46,7 @@
               <div class="d-flex">
                 <div
                   class="box mr-1"
-                  v-for="(tag, index) in task.tag"
+                  v-for="(tag, index) in task.tags"
                   :key="index"
                   :style="{ backgroundColor: tag.color }"
                 ></div>
@@ -75,13 +80,21 @@
               </div>
             </div>
             <div class="my-4">
-              <h3 class="font-weight-medium d-flex justify-start align-center">
+              <h3
+                class="
+                  font-weight-medium
+                  d-flex
+                  justify-start
+                  align-center
+                  my-2
+                "
+              >
                 <v-icon color="#37474F" class="mr-2">mdi-calendar-check</v-icon>
                 Việc cần làm
               </h3>
-              <div class="d-flex align-center my-1">
+              <div class="d-flex align-center my-1" v-if="setProcess != -1">
                 <span style="font-size: 14px" class="pr-2"
-                  >{{ setProcess }}%</span
+                  >{{ setProcess || 0 }}%</span
                 >
                 <v-progress-linear
                   background-color="#263238"
@@ -95,7 +108,7 @@
               </div>
               <div>
                 <div
-                  v-for="(val, index) in task.task"
+                  v-for="(val, index) in task.toDo"
                   :key="index"
                   class="d-flex justify-start align-center"
                 >
@@ -177,7 +190,7 @@
           </v-col>
         </v-row>
       </div>
-      <v-divider class="black--text"></v-divider>
+      <!-- <v-divider class="black--text"></v-divider>
       <div class="d-flex justify-space-around align-center py-4">
         <div>
           <v-btn @click="isOpen = false" color="red " large min-width="120px"
@@ -187,15 +200,16 @@
         <v-btn @click="changeTask()" color="success" min-width="120px" large
           >Lưu</v-btn
         >
-      </div>
+      </div> -->
     </v-card>
 
-    <ModalTag :tag="task.tag" ref="modalTag" />
+    <ModalTag :tag="task.tags" ref="modalTag" />
   </v-dialog>
 </template>
 
 <script>
 import ModalTag from "./ModalTag.vue";
+import service from "../services";
 export default {
   props: {
     task: {
@@ -211,14 +225,16 @@ export default {
       return this.task.image != "" ? this.task.image : "rgba(0,0,0,0.3)";
     },
     setProcess() {
-      if (this.task.task) {
-        let taskComplete = this.task.task.filter((val) => val.status == true);
-
-        let percent = (taskComplete.length / this.task.task.length).toFixed(2);
-        return percent * 100;
-      } else {
-        return 0;
+      if (this.task.toDo) {
+        if (this.task.toDo.length) {
+          let taskComplete = this.task.toDo.filter((val) => val.status == true);
+          let percent = (taskComplete.length / this.task.toDo.length).toFixed(
+            2
+          );
+          return percent * 100;
+        }
       }
+      return -1;
     },
   },
   data() {
@@ -239,16 +255,19 @@ export default {
       this.$refs.modalTag.showDialog();
     },
     removeTask(index) {
-      this.task.task.splice(index, 1);
+      this.task.toDo.splice(index, 1);
     },
     addTask() {
       if (this.taskValue) {
-        this.task.task.push({
+        this.task.toDo.push({
           name: this.taskValue,
           status: false,
         });
         this.taskValue = "";
       }
+    },
+    saveTask() {
+      service.taskService.updateTask(this.task, this.task._id);
     },
   },
 };

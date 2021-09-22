@@ -40,7 +40,6 @@ export default {
   },
   methods: {
     nextBoard() {
-      console.log(this.item);
       this.$router.push({
         name: "Board",
         params: {
@@ -49,8 +48,8 @@ export default {
       });
     },
     changeStar() {
-      let star = !this.item.star;
-      this.$emit("changeStar", star);
+      this.item.star = !this.item.star;
+      this.$emit("changeStar", this.item);
     },
   },
 };

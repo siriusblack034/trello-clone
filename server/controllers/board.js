@@ -20,7 +20,7 @@ const deleteBoard = async (req, res, next) => {
     const { boardId } = req.params
     await Board.findByIdAndDelete(boardId)
     return res.status(200).json({ success: true })
-
+    
   } catch (error) {
     next(error)
   }
@@ -39,19 +39,18 @@ const getBoard = async (req, res, next) => {
     const { boardId } = req.params
 
     const board = await Board.findOne({ _id: boardId })
-    const listDeck = await Deck.find({ boardId: boardId })
+    const listDeck = await Deck.find({ boardId: boardId }).sort('location')
     var decks = null;
     if (listDeck) {
       decks = await Promise.all(listDeck.map(async deck => {
-        let listTask = await Task.find({ deck: deck._id })
+        let tasks = await Task.find({ deck: deck._id }).sort('location')
         let title = deck.title
         return {
           ...deck._doc,
-          listTask
+          tasks
         }
       }))
     }
-    console.log(decks);
     return res.status(200).json({
       board: {
         ...board._doc,

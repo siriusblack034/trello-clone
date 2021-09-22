@@ -79,15 +79,6 @@ export default {
   },
   data() {
     return {
-      params: {
-        client_id:
-          "674926875872-t4veb122uilveljl5iepkd81s9d3idjb.apps.googleusercontent.com",
-      },
-      renderParams: {
-        width: 320,
-        height: 42,
-        longtitle: true,
-      },
       associates: [
         {
           name: "Facebook",
@@ -157,8 +148,14 @@ export default {
     },
     async loginWithAssociate(name) {
       if (name == "Gmail") {
-        const googleUser = await this.$gAuth.signIn();
-        console.log(googleUser);
+        this.loginWithGmail()
+          .then((result) => {
+            if (result.success) this.$router.push({ name: "HomeBoards" });
+          })
+          .catch((error) => {
+            console.log(error);
+            this.messError = error.message;
+          });
       }
     },
   },

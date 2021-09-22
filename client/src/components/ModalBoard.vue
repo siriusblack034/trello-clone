@@ -174,7 +174,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .v-dialog {
   overflow-y: hidden !important;
   min-height: 116px !important;

@@ -117,7 +117,6 @@
 
 <script>
 import { mapActions, mapState } from "vuex";
-import helpers from "../utils";
 export default {
   props: {
     scroll: {
@@ -136,8 +135,7 @@ export default {
       return this.inform.name || "Tài khoản";
     },
     srcImage() {
-      console.log(helpers.srcImage(this.inform.avatar));
-      return helpers.srcImage(this.inform.avatar);
+      return this.inform.avatar;
     },
   },
   data() {
@@ -157,14 +155,12 @@ export default {
       } else if (index == 2) {
         this.isLogin = false;
         this.userLoggout();
-        console.log(1234);
         this.$router.push({ path: "/logged-out" });
       }
     },
   },
   watch: {
-    user(newVal, oldVal) {
-      console.log(oldVal);
+    user(newVal) {
       this.inform = newVal;
     },
   },

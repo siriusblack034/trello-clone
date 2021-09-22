@@ -96,7 +96,6 @@
 
 <script>
 import { mapActions, mapState } from "vuex";
-import helpers from "../utils";
 import ModalUploadImage from "../components/ModalUploadImage.vue";
 export default {
   components: {
@@ -106,13 +105,13 @@ export default {
     ...mapState(["user"]),
     srcImage() {
       const url = this.newImage || this.user.avatar;
-      return helpers.srcImage(url);
+      return url;
     },
   },
   created() {
     this.name = this.user.name;
     this.sex = this.user.sex;
-    document.title = 'Profile | Trà Lô' 
+    document.title = "Profile | Trà Lô";
   },
   data() {
     return {
@@ -126,7 +125,10 @@ export default {
     ...mapActions(["updateUser"]),
     update() {
       var user = {
-        avatar: this.newImage || this.user.avatar,
+        avatar: {
+          url: this.newImage || this.user.avatar,
+          address: "local",
+        },
         name: this.name,
         sex: this.sex,
       };

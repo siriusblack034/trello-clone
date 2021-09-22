@@ -1,0 +1,2 @@
+server : Xóa board phải xóa tất cả deck + task trong board đó trong db
+user cũng thế

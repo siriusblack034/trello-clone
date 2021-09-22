@@ -5,6 +5,10 @@ const taskSchema = new Schema({
     type: String,
     required: true
   },
+  location: {
+    type: Number,
+    required: true
+  },
   background: {
     type: Object,
     default: {}
@@ -17,7 +21,7 @@ const taskSchema = new Schema({
     type: Object
   }],
   tags: [{
-    type: String
+    type: Object
   }],
   deck: {
     type: Schema.Types.ObjectId,

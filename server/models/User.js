@@ -4,7 +4,9 @@ const Schema = mongoose.Schema
 const bcrypt = require('bcryptjs')
 const UserSchema = new Schema({
   name: String,
-  avatar: String,
+  avatar: {
+    type: Object,
+  },
   sex: {
     type: String,
     enum: ['nam', 'nu']

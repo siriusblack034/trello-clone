@@ -8,7 +8,6 @@ const boardSchema = new Schema({
   background: {
     type: Object
   },
-
   star: {
     type: Boolean,
     default: false

@@ -1,5 +1,6 @@
 const Deck = require('../models/Deck')
 const Board = require('../models/Board')
+const Task = require('../models/Task')
 
 const addNewDeck = async (req, res, next) => {
   try {
@@ -13,7 +14,9 @@ const addNewDeck = async (req, res, next) => {
 const deleteDeck = async (req, res, next) => {
   try {
     const { deckId } = req.params
-    // Get a deck
+    //remove all task of deck
+    await Task.deleteMany({ deckId: deckId })
+    //remove deck
     const deck = await Deck.findById(deckId)
     await deck.remove()
     return res.status(200).json({ success: true })
@@ -42,10 +45,11 @@ const getAllDeck = async (req, res, next) => {
 const updateDeck = async (req, res, next) => {
   try {
     const { deckId } = req.params
-    console.log(deckId, req.body);
+    console.log(req.body);
     await Deck.findByIdAndUpdate(deckId, req.body)
-
-    return res.status(200)
+    return res.status(200).json({
+      message: 'update thành công'
+    })
   } catch (error) {
     next(error)
   }

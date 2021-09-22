@@ -12,8 +12,16 @@ const encoded = (userID) => {
 }
 const authGoogle = async (req, res, next) => {
   const token = encoded(req.user._id)
+  const user = {
+    email: req.user.email,
+    avatar: req.user.avatar.url,
+    sex: req.user.sex,
+    name: req.user.name
+  }
   res.setHeader('Authorization', token)
-  return res.status(200).json({ resources: true })
+  return res.status(200).json({
+    user
+  })
 
 }
 const authFacebook = async (req, res, next) => {
@@ -24,8 +32,10 @@ const authFacebook = async (req, res, next) => {
 }
 const signUp = async (req, res, next) => {
   const { name, sex, email, password } = req.body
-  const avatar = req.body.avatar || ""
-
+  const avatar = {
+    url: sex == "nam" ? "https://crosspointe.com/wp-content/uploads/2020/09/avatar-male.jpg" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTDEZ4I-pmXTea7WjywRkk5bQp3nTSxwEphfIoykACKhhDU9wXK6EBRqOHV540MG_KGOpM&usqp=CAU",
+    address: 'web'
+  }
   const foundUser = await User.findOne({ email })
   if (foundUser) {
     return res.status(403).json({ error: "Email da ton tai!" })
@@ -34,7 +44,7 @@ const signUp = async (req, res, next) => {
   const token = encoded(newUser._id)
   res.setHeader('Authorization', token)
   await newUser.save()
-  return res.status(200).json({ success: true })
+  return res.status(200).json({ success: newUser })
 }
 const signIn = (req, res, next) => {
   try {
@@ -66,13 +76,16 @@ const changePassword = async (req, res, next) => {
 }
 
 const secret = (req, res, next) => {
-  let image = req.user.avatar || "";
-  if (!image) {
-    image = req.user.sex == "nam" ? "https://crosspointe.com/wp-content/uploads/2020/09/avatar-male.jpg" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTDEZ4I-pmXTea7WjywRkk5bQp3nTSxwEphfIoykACKhhDU9wXK6EBRqOHV540MG_KGOpM&usqp=CAU"
+  var url = ''
+  if (req.user.avatar.address == 'local') {
+    url = req.user.avatar.url
+  }
+  else {
+    url = req.user.avatar.url
   }
   return res.status(200).json({
     name: req.user.name,
-    avatar: image,
+    avatar: url,
     email: req.user.email,
     sex: req.user.sex
   })

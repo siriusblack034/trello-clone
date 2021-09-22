@@ -1,15 +1,16 @@
 <template>
   <div class="home-page container">
-    <section class="viewed-recently">
+    <section class="viewed-recently" v-if="listStar.length">
       <div class="d-flex algin-center mb-2">
         <v-icon class="pr-3 pb-1" color="black">mdi-star-outline</v-icon>
         <h3 class="">Gắn Sao</h3>
       </div>
       <div class="board-list">
         <BoardItem
-          :item="item"
           v-for="(item, index) in listStar"
           :key="index"
+          :item="{ index, ...item }"
+          @changeStar="changeStar"
         />
       </div>
     </section>
@@ -20,9 +21,9 @@
       </div>
       <div class="board-list">
         <BoardItem
-          :item="item"
           v-for="(item, index) in recently"
           :key="index"
+          :item="{ index, ...item }"
           @changeStar="changeStar"
         />
         <div
@@ -45,6 +46,7 @@
 import { mapActions, mapState } from "vuex";
 import BoardItem from "../components/BoardItem.vue";
 import ModalBoard from "../components/ModalBoard.vue";
+import service from "../services";
 export default {
   components: {
     BoardItem,
@@ -73,8 +75,13 @@ export default {
     newBoard() {
       this.$refs.ModalBoard.open();
     },
-    changeStar(star) {
-      console.log(star);
+    changeStar(item) {
+      service.boardService.updateBoard(item, item._id).then((result) => {
+        if (result.status == 200) {
+          let index = item.index;
+          this.$set(this.recently, index, item);
+        }
+      });
     },
   },
 };

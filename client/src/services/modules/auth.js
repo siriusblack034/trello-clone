@@ -6,6 +6,9 @@ export default {
   loginWithFacebook() {
 
   },
+  loginWithGoogle(token) {
+    return api.post('auth/google', { access_token: token })
+  },
   register(user) {
     return api.post('auth/sign-up', user)
   },

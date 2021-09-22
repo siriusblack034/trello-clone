@@ -4,7 +4,7 @@ const localstrategy = require('passport-local').Strategy
 const { ExtractJwt } = require('passport-jwt')
 const User = require('../models/User')
 
-const GooglePlusTokenStrategy = require('passport-google-plus-token')
+const GoogleTokenStrategy = require('passport-google-token').Strategy
 const FacebookTokenStrategy = require('passport-facebook-token')
 const config = require('../configs')
 passport.use(new jwtStrategy({
@@ -22,9 +22,10 @@ passport.use(new jwtStrategy({
 }))
 
 // Passport Google
-passport.use(new GooglePlusTokenStrategy({
+
+passport.use(new GoogleTokenStrategy({
   clientID: config.GOOGLE_CUSTOMER_ID,
-  secret: config.GOOGLE_CLIENT_SECRET_CODE
+  clientSecret: config.GOOGLE_CLIENT_SECRET_CODE
 }, async (accessToken, refreshToken, profile, done) => {
   try {
     //check user
@@ -37,7 +38,10 @@ passport.use(new GooglePlusTokenStrategy({
       email: profile.emails[0].value,
       authGoogleID: profile.id,
       name: profile.displayName,
-      avatar: profile.photos[0].value
+      avatar: {
+        url: profile._json.picture,
+        address: 'web'
+      }
     })
     await newUser.save()
     done(null, newUser)
