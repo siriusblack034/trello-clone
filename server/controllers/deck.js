@@ -14,10 +14,22 @@ const addNewDeck = async (req, res, next) => {
 const deleteDeck = async (req, res, next) => {
   try {
     const { deckId } = req.params
-    //remove all task of deck
-    await Task.deleteMany({ deckId: deckId })
-    //remove deck
+
     const deck = await Deck.findById(deckId)
+    const locationDeckDel = deck.location
+
+    //update deck after deck was delete
+    const decks = req.body
+    var decksUpdate = []
+    var lengthDecks = decks.length;
+    if (locationDeckDel !== decks[lengthDecks - 1]) {
+      decksUpdate = decks.filter((deck, index) => index > locationDeckDel)
+      Promise.all(decksUpdate.map(async deck => {
+        await Deck.findByIdAndUpdate(deck._id, { location: deck.location - 1 })
+      }))
+    }
+
+    await Task.deleteMany({ deck: deckId })
     await deck.remove()
     return res.status(200).json({ success: true })
 
@@ -55,11 +67,28 @@ const updateDeck = async (req, res, next) => {
   }
 }
 
+const dragDeck = async (req, res, next) => {
+  try {
+    const { newIndex, oldIndex, decks } = req.body
+    var max = newIndex > oldIndex ? newIndex : oldIndex
+    var min = newIndex > oldIndex ? oldIndex : newIndex
+    Promise.all(decks.map(async (deck, index) => {
+      if (index >= min && index <= max) {
+        let id = deck._id
+        await Deck.findByIdAndUpdate(id, { location: index })
+      }
+    }))
+    return res.status(200).json({ message: '"draggble success!' })
+  } catch (error) {
+    next(error)
+  }
+}
 
 module.exports = {
   addNewDeck,
   deleteDeck,
   getAllDeck,
-  updateDeck
+  updateDeck,
+  dragDeck
 
 }

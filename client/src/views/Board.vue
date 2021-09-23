@@ -69,7 +69,7 @@
           id="board"
           :list="board.decks"
           handle=".list-wrapper"
-          @change="moved"
+          @change="moveDeck"
         >
           <v-card
             v-for="(deck, indexDeck) in board.decks"
@@ -112,7 +112,7 @@
               :group="{ name: 'task' }"
               v-bind="dragOptions"
               handle=".list"
-              @change="movedTask"
+              @change="moveTask(deck._id, $event)"
             >
               <v-card
                 v-for="(val, idxTask) in deck.tasks"
@@ -160,8 +160,8 @@
                       auto-grow
                     >
                     </v-textarea>
-                    {{ val.toDo }}
-                    <div v-if="val.description || val.toDo.length > 0">
+
+                    <div v-if="checkSub(val)">
                       <v-divider></v-divider>
                       <div
                         class="d-flex align-center justify-start py-2 pl-2"
@@ -355,6 +355,7 @@ export default {
     log(evt) {
       window.console.log(evt);
     },
+
     scrollX(e) {
       e = window.event || e;
       var delta = Math.max(-1, Math.min(1, e.wheelDelta || -e.detail));
@@ -363,10 +364,10 @@ export default {
     closeTag(tag, task, board) {
       this.board.decks[board].tasks[task].tags.splice(tag, 1);
     },
-    add() {
+    async add() {
       if (this.newDeck) {
         let location = this.board.decks.length;
-        service.deckService
+        await service.deckService
           .newDeck({
             title: this.newDeck,
             boardId: this.$route.params.boardId,
@@ -377,7 +378,6 @@ export default {
               this.board.decks.push(result.data.deck);
               this.newDeck = "";
               this.addDeck = false;
-              this.addTask.push(false);
             }
           });
       }
@@ -399,11 +399,20 @@ export default {
       }
     },
     removeDeck(index, id) {
-      service.deckService.deleteDeck(id).then((result) => {
+      service.deckService.deleteDeck(id, this.board.decks).then((result) => {
         if (result.status == 200) {
           this.board.decks.splice(index, 1);
           this.addTask.splice(false, 1);
         }
+      });
+    },
+    async moveDeck(event) {
+      let newIndex = event.moved.newIndex;
+      let oldIndex = event.moved.oldIndex;
+      await service.deckService.dragDeck({
+        decks: this.board.decks,
+        newIndex,
+        oldIndex,
       });
     },
     changeNameBoard(title) {
@@ -429,36 +438,61 @@ export default {
     openAddTask(index) {
       this.indexTask = index;
     },
-    async moved(event) {
-      let newIndex = event.moved.newIndex;
-      let oldIndex = event.moved.oldIndex;
-      let el = event.moved.element;
-      let elIdOld = el._id;
-      let elIdNew = this.board.decks[oldIndex]._id;
-      await service.deckService.updateDeck({ location: newIndex }, elIdOld);
-      await service.deckService.updateDeck({ location: oldIndex }, elIdNew);
+
+    async moveTask(deckId, event) {
+      const deck = this.board.decks.filter((deck) => deck._id === deckId);
+      if (event.added) {
+        const task = event.added.element;
+        //update deckId for task
+        console.log(deckId);
+        await service.taskService.updateTask({ deck: deckId }, task._id);
+        // update location for task in deck arrival
+        await service.taskService.dragTask({
+          tasks: deck[0].tasks,
+        });
+      }
+      // update location for task in deck move
+      if (event.removed) {
+        await service.taskService.dragTask({
+          tasks: deck[0].tasks,
+        });
+      }
+      if (event.moved) {
+        console.log("123456");
+        await service.taskService.dragTask({
+          tasks: deck[0].tasks,
+        });
+      }
     },
-    async movedTask(event) {
-      console.log(event);
-    },
-    checkMove(event) {
-      console.log(event);
-    },
-    addNewTask(deckId, index) {
+    async addNewTask(deckId, index) {
       if (this.newTask) {
-        let location = this.board.decks[index].tasks.length;
+        let listTask = this.board.decks[index].tasks;
+        let length = listTask.length;
+
         let task = {
           title: this.newTask,
           deckId,
-          location,
+          location: length,
         };
-        service.taskService.newTask(task).then((result) => {
+        await service.taskService.newTask(task).then((result) => {
           if (result.status == 200) {
-            this.board.decks[index].tasks.push(task);
+            this.board.decks[index].tasks.push(result.data.task);
             this.newTask = "";
           }
         });
       }
+    },
+    checkSub(task) {
+      let toggle = false;
+      if (task.description) {
+        toggle = true;
+      }
+      if (task.toDo) {
+        if (task.toDo.length > 0) {
+          toggle = true;
+        }
+      }
+      return toggle;
     },
   },
 };

@@ -7,7 +7,11 @@ export default {
   updateDeck(deck, idDeck) {
     return api.patch(`decks/update-deck/${idDeck}`, deck)
   },
-  deleteDeck(idDeck) {
-    return api.delete(`decks/delete-deck/${idDeck}`)
+  dragDeck(data) {
+    return api.post('decks/draggble', data)
+  },
+  deleteDeck(idDeck, decks) {
+    console.log(decks);
+    return api.post(`decks/delete-deck/${idDeck}`, decks)
   },
 }

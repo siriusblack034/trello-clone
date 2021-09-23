@@ -10,4 +10,8 @@ export default {
   deleteTask(idTask) {
     return api.delete(`tasks/delete-task/${idTask}`)
   },
+  dragTask(data) {
+    console.log(data);
+    return api.post('tasks/draggble', data)
+  }
 }

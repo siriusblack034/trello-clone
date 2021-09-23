@@ -5,7 +5,7 @@ const addNewTask = async (req, res, next) => {
     const newTask = await new Task(req.body)
     newTask.deck = req.body.deckId
     await newTask.save();
-    return res.status(200).json({ newTask })
+    return res.status(200).json({ task: newTask })
   } catch (error) {
     next(error)
   }
@@ -13,7 +13,7 @@ const addNewTask = async (req, res, next) => {
 const deleteTask = async (req, res, next) => {
   try {
     const { taskId } = req.params
-    console.log(taskId + '------------');
+
     await Task.findByIdAndRemove(taskId)
 
     return res.status(200).json({ success: true })
@@ -37,16 +37,29 @@ const updateTask = async (req, res, next) => {
     const task = await Task.findById(taskId)
     await task.update(req.body)
     return res.status(200).json({ task })
-
-
   } catch (error) {
     next(error)
   }
 
 }
+const dragTask = async (req, res, next) => {
+  try {
+    const { tasks } = req.body
+    if (tasks) {
+      Promise.all(tasks.map(async (task, index) => {
+        let id = task._id
+        await Task.findByIdAndUpdate(id, { location: index })
+      }))
+    }
+    return res.status(200).json({ message: '"draggble success!' })
+  } catch (error) {
+    next(error)
+  }
+}
 module.exports = {
   addNewTask,
   deleteTask,
   updateTask,
-  getAll
+  getAll,
+  dragTask
 }

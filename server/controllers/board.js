@@ -20,7 +20,7 @@ const deleteBoard = async (req, res, next) => {
     const { boardId } = req.params
     await Board.findByIdAndDelete(boardId)
     return res.status(200).json({ success: true })
-    
+
   } catch (error) {
     next(error)
   }
@@ -37,7 +37,6 @@ const getAllBoard = async (req, res, next) => {
 const getBoard = async (req, res, next) => {
   try {
     const { boardId } = req.params
-
     const board = await Board.findOne({ _id: boardId })
     const listDeck = await Deck.find({ boardId: boardId }).sort('location')
     var decks = null;

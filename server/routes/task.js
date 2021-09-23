@@ -8,6 +8,6 @@ router.route('/get-all').get(taskCtr.getAll)
 router.route('/update-task/:taskId').patch(taskCtr.updateTask)
 
 router.route('/delete-task/:taskId').delete(taskCtr.deleteTask)
-
+router.route('/draggble').post(taskCtr.dragTask)
 
 module.exports = router
