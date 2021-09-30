@@ -90,7 +90,7 @@ export const store = new Vuex.Store({
 
     async loginWithGmail({ commit, dispatch }) {
       const googleUser = await vue.$gAuth.signIn();
-      const token = googleUser.Zb.access_token
+      const token = googleUser.$b.access_token
       return new Promise((resolve, reject) => {
         service.authService.loginWithGoogle(token).then((result) => {
           if (result.data) {

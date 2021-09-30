@@ -37,6 +37,10 @@ export default {
       type: Object,
       required: true,
     },
+    disableStar: {
+      type: Boolean,
+      default: false,
+    },
   },
   methods: {
     nextBoard() {
@@ -48,8 +52,10 @@ export default {
       });
     },
     changeStar() {
-      this.item.star = !this.item.star;
-      this.$emit("changeStar", this.item);
+      if (!this.disableStar) {
+        this.item.star = !this.item.star;
+        this.$emit("changeStar", this.item);
+      }
     },
   },
 };
@@ -115,6 +121,7 @@ export default {
   position: relative;
   text-decoration: none;
   border-radius: 4px;
+  cursor: pointer;
 }
 .board-item_title {
   word-wrap: break-word;

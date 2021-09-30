@@ -160,11 +160,12 @@ export default {
       };
       boardService.newBoard(board).then((result) => {
         if (result.status == 200) {
-          this.addNewBoard(board);
+          this.addNewBoard(result.data.board);
+          console.log(result.data);
           this.$router.push({
             name: "Board",
             params: {
-              boardId: result.data.boardId,
+              boardId: result.data.board._id,
             },
           });
         }

@@ -9,14 +9,18 @@
       <v-hover v-slot="{ hover }">
         <template>
           <div
-            style="height: 120px; transition: all 150ms ease-in 150ms"
+            style="height: 150px; transition: all 50ms ease-in 150ms"
             :style="{
-              backgroundColor: setBackground,
+              background: task.background || 'white',
               opacity: hover ? '0.7' : '1',
             }"
             class="d-flex align-center justify-center"
           >
-            <v-btn outlined color="white" v-if="hover"
+            <v-btn
+              outlined
+              :color="task.background != 'white' ? 'white' : 'black'"
+              v-if="hover"
+              @click="showModal('background')"
               ><v-icon>mdi-folder-multiple-image</v-icon></v-btn
             >
           </div>
@@ -53,7 +57,7 @@
                 <div
                   class="box mr-1 d-flex justify-center align-center"
                   style="background-color: rgba(0, 0, 0, 0.2); cursor: pointer"
-                  @click="showModal()"
+                  @click="showModal('tag')"
                 >
                   <v-icon>mdi-plus</v-icon>
                 </div>
@@ -190,20 +194,16 @@
           </v-col>
         </v-row>
       </div>
-      <!-- <v-divider class="black--text"></v-divider>
-      <div class="d-flex justify-space-around align-center py-4">
-        <div>
-          <v-btn @click="isOpen = false" color="red " large min-width="120px"
-            >Hủy</v-btn
-          >
-        </div>
-        <v-btn @click="changeTask()" color="success" min-width="120px" large
-          >Lưu</v-btn
-        >
-      </div> -->
+      
     </v-card>
 
-    <ModalTag :tag="task.tags" ref="modalTag" />
+    <ModalTag
+      :tag="task.tags"
+      :type="typeModal"
+      :backgrounds="task.background"
+      @chooseBackground="changeBackground"
+      ref="modalTag"
+    />
   </v-dialog>
 </template>
 
@@ -221,9 +221,6 @@ export default {
     ModalTag,
   },
   computed: {
-    setBackground() {
-      return this.task.image != "" ? this.task.image : "rgba(0,0,0,0.3)";
-    },
     setProcess() {
       if (this.task.toDo) {
         if (this.task.toDo.length) {
@@ -242,16 +239,22 @@ export default {
       isOpen: false,
       taskValue: "",
       checkAddTask: false,
+      typeModal: "",
     };
   },
   methods: {
+    changeBackground(val) {
+      this.task.background = val;
+
+    },
     showDialog() {
       this.isOpen = true;
     },
     closeDialog() {
       this.isOpen = false;
     },
-    showModal() {
+    showModal(val) {
+      this.typeModal = val;
       this.$refs.modalTag.showDialog();
     },
     removeTask(index) {

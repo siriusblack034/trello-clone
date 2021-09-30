@@ -2,16 +2,47 @@
   <div class="main" :style="getBackground" v-if="board">
     <div class="board-main d-flex flex-column">
       <div class="board-header d-flex justify-space-between align-center">
-        <div class="d-flex justify-start align-center">
+        <div
+          class="d-flex justify-start align-center"
+          style="position: relative"
+        >
+          <Button
+            :title="'Quay trở lại'"
+            @click="$router.push({ name: 'HomeBoards' })"
+          />
           <v-btn
             style="text-transform: none"
             height="40px"
             class="button-color mx-2 my-1"
+            title="Chọn bảng hiển thị"
+            @click="showList"
           >
             Bảng
             <v-icon> mdi-chevron-down </v-icon>
           </v-btn>
-
+          <v-card
+            v-if="showListBoard"
+            v-click-outside="hideList"
+            class="pa-3 list-board"
+            width="300"
+          >
+            <div class="d-flex align-center justify-center my-2">
+              <p class="text-center ma-0" style="width: 90%">Tất cả các bảng</p>
+              <v-icon @click="hideList" style="cursor: pointer"
+                >mdi-close</v-icon
+              >
+            </div>
+            <v-divider color="black"></v-divider>
+            <div>
+              <div
+                class="ma-2"
+                v-for="(board, index) in listBoard"
+                :key="index"
+              >
+                <BoardItem :item="board" :disableStar="true" />
+              </div>
+            </div>
+          </v-card>
           <v-text-field
             name="name"
             id="id"
@@ -28,6 +59,8 @@
             style="text-transform: none"
             height="40px"
             class="button-color mx-2 my-1"
+            title="Đánh dấu bảng này"
+            @click="changeStar"
           >
             <v-icon
               :color="board.star == true ? 'yellow' : ''"
@@ -53,9 +86,9 @@
             style="text-transform: none"
             height="40px"
             class="button-color mx-2 my-1"
+            @click="loggout"
           >
-            <v-icon class="pr-1"> mdi-dots-horizontal</v-icon>
-            Hiện menu
+            Đăng xuất
           </v-btn>
         </div>
       </div>
@@ -122,9 +155,9 @@
                 <div class="d-flex justify-space-around align-center task">
                   <div class="my-text-style d-flex flex-column">
                     <div
-                      v-if="val.image"
+                      v-if="val.background"
                       style="height: 32px; border-radius: 3px 3px 0 0"
-                      :style="{ backgroundColor: val.image }"
+                      :style="{ background: val.background }"
                     ></div>
                     <div class="d-flex">
                       <v-chip
@@ -140,7 +173,9 @@
                         :color="chip.color"
                         :close="tagName"
                         text-color="white"
-                        @click:close="closeTag(idxTag, idxTask, indexDeck)"
+                        @click:close="
+                          closeTag(idxTag, idxTask, indexDeck, val._id)
+                        "
                         @click="tagName = !tagName"
                       >
                         {{ tagName ? chip.nameTask : "" }}
@@ -304,24 +339,24 @@
 
 <script>
 import Draggable from "vuedraggable";
-import { mapActions } from "vuex";
+import { mapActions, mapState } from "vuex";
 import ModalTask from "../components/ModalTask.vue";
+import Button from "../components/Button.vue";
+import BoardItem from "../components/BoardItem.vue";
 import service from "../services";
 export default {
   components: {
     Draggable,
     ModalTask,
+    Button,
+    BoardItem,
   },
   async created() {
-    const loading = this.$loading.show();
-    let id = this.$route.params.boardId;
-    await this.getBoard(id);
-    this.board = this.$store.state.board;
-    document.title = `${this.board.name} | Trà Lô`;
-    loading.hide();
+    await this.setData();
   },
 
   computed: {
+    ...mapState(["listBoard"]),
     getBackground() {
       if (this.board.background.color) {
         return `background-color: ${this.board.background.color}`;
@@ -348,21 +383,37 @@ export default {
       newDeck: "",
       newTask: "",
       indexTask: "",
+      showListBoard: false,
     };
   },
   methods: {
-    ...mapActions(["getBoard", "addNewDeck"]),
+    ...mapActions(["getBoard", "addNewDeck", "userLoggout"]),
+    async setData() {
+      const loading = this.$loading.show();
+      let id = this.$route.params.boardId;
+      await this.getBoard(id);
+      this.board = this.$store.state.board;
+      document.title = `${this.board.name} | Trà Lô`;
+      loading.hide();
+    },
     log(evt) {
       window.console.log(evt);
     },
-
+    showList() {
+      this.showListBoard = true;
+    },
+    hideList() {
+      this.showListBoard = false;
+    },
     scrollX(e) {
       e = window.event || e;
       var delta = Math.max(-1, Math.min(1, e.wheelDelta || -e.detail));
       document.getElementById("board").scrollLeft -= delta * 50;
     },
-    closeTag(tag, task, board) {
-      this.board.decks[board].tasks[task].tags.splice(tag, 1);
+    async closeTag(tag, task, deck, idTask) {
+      this.board.decks[deck].tasks[task].tags.splice(tag, 1);
+      const tags = this.board.decks[deck].tasks[task].tags;
+      await service.taskService.updateTask({ tags }, idTask);
     },
     async add() {
       if (this.newDeck) {
@@ -444,7 +495,6 @@ export default {
       if (event.added) {
         const task = event.added.element;
         //update deckId for task
-        console.log(deckId);
         await service.taskService.updateTask({ deck: deckId }, task._id);
         // update location for task in deck arrival
         await service.taskService.dragTask({
@@ -458,7 +508,6 @@ export default {
         });
       }
       if (event.moved) {
-        console.log("123456");
         await service.taskService.dragTask({
           tasks: deck[0].tasks,
         });
@@ -494,11 +543,37 @@ export default {
       }
       return toggle;
     },
+    changeStar() {
+      service.boardService
+        .updateBoard({ star: !this.board.star }, this.board._id)
+        .then((result) => {
+          if (result.status == 200) {
+            this.board.star = !this.board.star;
+          }
+        });
+    },
+    loggout() {
+      this.userLoggout();
+      this.$router.push({ path: "/logged-out" });
+    },
+  },
+  watch: {
+    async $route() {
+      await this.setData()
+    },
   },
 };
 </script>
 
 <style  scoped>
+.list-board {
+  position: absolute;
+  top: 48px;
+  z-index: 1000;
+  left: 135px;
+  background-color: rgba(255, 255, 255, 0.7);
+  color: #172b4d;
+}
 .chip-line-height {
   height: 10px !important;
 }
@@ -517,22 +592,20 @@ export default {
 .list div:hover a {
   display: block;
 }
-.add-deck {
-}
 </style>
 <style>
 .main {
-  min-height: 100vh;
+  height: 100%;
   background-position: 50%;
   background-size: cover;
   position: relative;
-  top: 70px;
 }
 .board-main {
   min-height: 100vh;
   position: relative;
   transition: margin 0.1s ease-in;
   margin-right: 0;
+  overflow-y: hidden;
 }
 .board-header {
   background-color: rgba(0, 0, 0, 0.24);
@@ -586,6 +659,8 @@ export default {
   display: inline-block !important;
   vertical-align: top;
   white-space: nowrap !important;
+  max-height: 100%;
+  overflow-y: auto;
 }
 .list {
   background-color: #ebecf0;
@@ -619,7 +694,7 @@ export default {
   background-color: rgba(255, 255, 255, 0.8);
 }
 ::-webkit-scrollbar {
-  width: 15px;
+  width: 12px;
   height: 12px;
 }
 

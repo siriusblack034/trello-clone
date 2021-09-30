@@ -10,8 +10,8 @@ const taskSchema = new Schema({
     required: true
   },
   background: {
-    type: Object,
-    default: {}
+    type: String,
+    default: 'white'
 
   },
   description: {

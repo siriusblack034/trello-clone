@@ -1,7 +1,7 @@
 const Board = require('../models/Board');
 const Deck = require('../models/Deck');
 const Task = require('../models/Task');
-
+const resize = require('../helpers/resizeImage')
 const createBoard = async (req, res, next) => {
   try {
     const board = {
@@ -10,10 +10,10 @@ const createBoard = async (req, res, next) => {
     }
     const newBoard = new Board(board)
     await newBoard.save()
-    return res.status(200).json({ boardId: newBoard._id })
+    return res.status(200).json({ board: newBoard })
   } catch (error) {
     next(error)
-  }
+  } 
 }
 const deleteBoard = async (req, res, next) => {
   try {

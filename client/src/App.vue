@@ -1,6 +1,6 @@
 <template>
   <v-app id="app">
-    <div>
+    <div v-if="this.$route.name != 'Board'">
       <div
         v-if="this.$route.name == 'Login' || this.$route.name == 'Logup'"
         class="py-6"
@@ -34,7 +34,6 @@ export default {
   async created() {
     window.addEventListener("scroll", this.handleScroll);
     this.$store.dispatch("getCookie");
-     
   },
   computed: {
     ...mapState(["user"]),
