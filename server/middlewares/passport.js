@@ -88,7 +88,6 @@ passport.use(new localstrategy({
   usernameField: "email"
 }, async (email, password, done) => {
   try {
-    console.log("account", email, password);
     const user = await User.findOne({ email })
     if (!user)
       return done(null, false)

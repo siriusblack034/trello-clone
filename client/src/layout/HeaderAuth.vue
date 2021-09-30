@@ -1,5 +1,5 @@
 <template>
-  <div class="text-center white--text header-img">
+  <div class="d-flex white--text header-img">
     <img
       class="header-img"
       src="https://aid-frontend.prod.atl-paas.net/atlassian-id/front-end/5.0.251/static/media/trello-logo-blue.f7627b3a.svg"
